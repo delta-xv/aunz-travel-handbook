@@ -53,3 +53,4 @@ body.logbook{background:#e5dfcf;color:var(--ink);-webkit-font-smoothing:antialia
 .logbook .date-rail,.logbook .weather-grid,.logbook .sequence{cursor:grab}
 .logbook .is-mouse-dragging{cursor:grabbing;scroll-snap-type:none;user-select:none}
 @media print{.logbook .app{max-width:none}.logbook .mobile-nav{display:none}.logbook .detail-dialog{position:static;max-width:none;height:auto;max-height:none}}
+.logbook .day.expanded>.day-body{display:block;padding:0 2px 20px}.logbook .day.expanded>.day-head>.icon{transform:rotate(90deg)}.logbook .day.expanded>.day-head{border-bottom:1px dashed var(--line);margin-bottom:16px}.logbook .day-body .story>p:first-child{margin-top:0}.logbook .inline-day-actions{display:flex;gap:10px;margin-top:18px}.logbook .inline-day-actions button{flex:1;min-height:48px}
