@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#082f4d">
+  <title>出团资料 · 澳新旅行日志</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/documents.css">
+  <link rel="stylesheet" href="assets/logbook.css">
+  <script src="assets/departure-data.js" defer></script>
+  <script src="assets/documents.js" defer></script>
+</head>
+<body class="logbook logbook-documents">
+  <main id="catalog" class="catalog">
+    <header class="catalog-header"><a class="back-link" href="index.html#tips">← 旅行日志</a><span>随行资料</span></header>
+    
+    <div class="document-heading"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 1v4m0 14v4M1 12h4m14 0h4M8 16l2-6 6-2-2 6-6 2Z"/><path d="m10 10 4 4"/></svg><h1>出团通知</h1></div>
+    <p class="intro">16 页原稿</p>
+    <div class="document-actions"><a class="primary" href="assets/documents/departure-notice.pdf" download="出团通知.pdf">下载原 PDF · 1.1 MB</a><a class="button" href="assets/documents/departure-notice.pdf" target="_blank" rel="noopener">打开 PDF ↗</a></div>
+    <a id="resumeReading" class="resume" href="#page-1" hidden></a>
+    <nav id="topicIndex" class="topic-grid" aria-label="资料主题目录"></nav>
+    <section class="page-index" aria-labelledby="pageIndexTitle">
+      <h2 id="pageIndexTitle">全部页码</h2>
+      <label class="search-label" for="documentSearch">搜索原文</label>
+      <div class="search-row"><input id="documentSearch" type="search" placeholder="例如：JQ955、酒店、行李" autocomplete="off" enterkeyhint="search"><button id="clearSearch" class="button">清空</button></div>
+      <p id="searchStatus" class="muted" role="status"></p>
+      <div id="pageList" class="page-list"></div>
+      <div id="noResults" class="empty-state" hidden>未找到结果，试试其他关键词。<button id="showAll" class="button">查看全部 16 页</button></div>
+    </section>
+    
+    <noscript><p>当前浏览器未运行脚本，可直接使用上方链接打开或下载原 PDF。</p></noscript>
+  </main>
+  <section id="reader" class="reader" aria-label="出团通知逐页阅读" hidden>
+    <header class="reader-header">
+      <div class="reader-topbar"><button id="backToCatalog" class="button">← 目录</button><label class="page-picker"><span class="sr-only">跳转页码</span><select id="pageSelect" aria-label="跳转页码"></select></label><a class="button" href="assets/documents/departure-notice.pdf" download="出团通知.pdf">下载 PDF</a></div>
+      <h2 id="readerTitle" tabindex="-1"></h2>
+      <div class="reader-options"><div class="mode-toggle" role="group" aria-label="阅读方式"><button id="imageMode" aria-pressed="true">原图</button><button id="textMode" aria-pressed="false">文字辅助</button></div></div>
+    </header>
+    <div id="pageViewport" class="page-viewport" tabindex="0" aria-label="原稿图片，可放大和滚动">
+      <div id="pageCanvas" class="page-canvas"><img id="pageImage" alt="" width="1697" height="2400" draggable="false"></div>
+      <div id="imageError" class="image-error" hidden><p>这一页暂时无法加载。</p><button id="retryPage" class="button">重新加载</button><a class="button" href="assets/documents/departure-notice.pdf" target="_blank" rel="noopener">打开原 PDF ↗</a></div>
+    </div>
+    <div id="textViewport" class="text-viewport" hidden><p class="source-note">表格和跨页内容请看原图。</p><pre id="pageText"></pre></div>
+    <p id="readerStatus" class="reader-status" role="status"></p>
+    <footer class="reader-footer"><button id="previousPage" class="button" aria-label="上一页">← 上页</button><div id="zoomControls" class="zoom-controls" role="group" aria-label="图片缩放"><button id="zoomOut" class="button" aria-label="缩小">−</button><button id="fitPage" class="button" aria-label="恢复适合屏幕宽度">适宽</button><button id="zoomIn" class="button" aria-label="放大">＋</button></div><span id="textPageLabel" class="muted" hidden></span><button id="nextPage" class="button" aria-label="下一页">下页 →</button></footer>
+  </section>
+</body>
+</html>
