@@ -6,7 +6,7 @@
   --log-serif:"Songti SC","STSong","Noto Serif CJK SC",Georgia,serif;
 }
 body.logbook{background:#eee8da;color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh;isolation:isolate}
-body.logbook::before{content:'';position:fixed;inset:80px 12px 90px;z-index:-1;pointer-events:none;background:url('aunz-background-portrait.png?v=d4baba12e55f') center / contain no-repeat;mix-blend-mode:multiply;filter:sepia(.45) saturate(.45);opacity:.19}
+body.logbook::before{content:'';position:fixed;inset:80px 12px auto;height:var(--background-height,calc(100vh - 170px));height:var(--background-height,calc(100svh - 170px));z-index:-1;pointer-events:none;background:url('aunz-background-portrait.png?v=d4baba12e55f') center / contain no-repeat;mix-blend-mode:multiply;filter:sepia(.45) saturate(.45);opacity:.19}
 .logbook .app{max-width:1200px;box-shadow:0 0 0 1px #b7b6a6}
 .logbook .paper,.logbook-documents .catalog{background-color:transparent;background-image:radial-gradient(#766b4b0c .5px,transparent .7px),radial-gradient(#ffffff66 .5px,transparent .8px);background-size:5px 7px,7px 5px;background-position:0 0,2px 3px}
 .logbook .paper{padding-top:20px}.logbook .view,.logbook .footer{max-width:850px}

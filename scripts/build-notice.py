@@ -276,10 +276,10 @@ with pdfplumber.open(PDF) as document:
         print(f'Page {number}: {length} characters checked')
 content=organize(pages)
 header='''<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#163746"><title>出团通知 · 澳新旅行手册</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/documents.css"><link rel="stylesheet" href="assets/logbook.css"><script src="assets/documents.js" defer></script></head>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#163746"><title>出团通知 · 澳新旅行手册</title><link rel="icon" href="data:,"><link rel="stylesheet" href="assets/documents.css"><link rel="stylesheet" href="assets/logbook.css"><script src="assets/documents.js" defer></script><script src="assets/background.js" defer></script></head>
 <body class="logbook logbook-documents"><main id="reader" class="reader" aria-label="出团通知"><header class="reader-header"><div class="reader-topbar"><a id="noticeBack" class="button" href="index.html#today">← 手册</a><h1 class="notice-title">出团通知</h1></div></header><div id="noticeContent" class="notice-content">'''
 footer='''</div><footer id="sectionNavigation" class="reader-footer" hidden><button id="previousSection" class="button">← 上一节</button><span id="sectionCounter" class="notice-page-counter" role="status"></span><button id="nextSection" class="button">下一节 →</button></footer><noscript><style>.notice-section[hidden]{display:block!important}.reader-footer{display:none!important}</style></noscript></main></body></html>'''
-for asset in ['documents.css', 'documents.js', 'logbook.css']:
+for asset in ['documents.css', 'documents.js', 'logbook.css', 'background.js']:
     version=hashlib.sha256((ROOT/'assets'/asset).read_bytes()).hexdigest()[:12]
     header=header.replace(f'assets/{asset}', f'assets/{asset}?v={version}')
 (ROOT/'documents.html').write_text(header+content+footer,encoding='utf-8')
