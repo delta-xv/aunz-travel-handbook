@@ -28,7 +28,7 @@
 
 ## 出团通知
 
-页眉提供唯一的“出团通知”入口。打开后从第一页阅读，保留上一页、下一页、图片缩放和原 PDF 下载。原 PDF 和页图保持原样，阅读器不使用外部 PDF 服务。
+页眉提供唯一的“出团通知”入口。打开后从第一页阅读完整 HTML 原文，保留上一页、下一页和原 PDF 下载。文字、航班表、保险和费用表均按原稿转换；原稿中的入境物品图已逐项转为文字。原 PDF 保持原样，HTML 阅读不加载任何图片或 PDF。
 
 ## 文件与离线使用
 
@@ -40,10 +40,10 @@ assets/handbook.css             布局与触屏样式
 assets/logbook.css              主手册和资料区共用的日志风格
 assets/route-map.png            路线底图
 
-documents.html                 出团通知阅读器
+documents.html                 出团通知完整 HTML 与阅读器
 assets/documents.css           阅读器布局
-assets/documents.js            翻页和缩放
-assets/documents/               原 PDF 与逐页图片
+assets/documents.js            HTML 翻页
+assets/documents/               原 PDF
 ```
 
 复制或部署时保留整个目录。文件保存在本机后，可用支持 JavaScript 的浏览器离线阅读行程、路线图和出团通知。天气、百科、外部地图和航班动态需要联网。通过网址访问时要先加载资源，目前没有自动离线安装功能。
@@ -71,3 +71,7 @@ python3 -m http.server 48765 --bind <本机局域网IP>
 ## 外部链接格式
 
 [高德 URI](https://lbs.amap.com/api/uri-api/guide/search/search)、[百度 Web URI](https://lbsyun.baidu.com/faq/api?title=webapi%2Furi%2Fweb)、[Apple Map Links](https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html)、[Google Maps URLs](https://developers.google.com/maps/documentation/urls/get-started)、[Windy 地点链接](https://community.windy.com/topic/77/windy-com-url-parameters)。
+
+## 原稿转换
+
+`python3 scripts/build-notice.py` 使用本地的 pdfplumber 将原 PDF 转成 HTML。脚本保留表格单元格与跨行、跨列关系，并逐页校对全部非空白文字字符；列表符号统一为可显示的圆点。入境物品图的清单按原图逐项转录。若 PDF 页数或表格结构变化，需要先核对脚本中的表格选择。运行前优先使用项目虚拟环境。
