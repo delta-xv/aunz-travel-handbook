@@ -1,6 +1,7 @@
 (() => {
   const root = new URL('.', document.currentScript.src);
   const stops = {
+    shanghai: ['沪', '上海', 31.2304, 121.4737, 'transit', 1],
     melbourne: ['1', '墨尔本', -37.8136, 144.9631, 'stay', 2],
     cairns: ['2', '凯恩斯', -16.9186, 145.7781, 'stay', 5],
     sydney: ['3', '悉尼', -33.8688, 151.2093, 'stay', 7],
@@ -35,6 +36,17 @@
       note: '悉尼飞皇后镇。南岛经库克山至基督城机场，再飞奥克兰；北岛环线回到奥克兰。基督城仅机场中转。'
     }
   };
+  regions.all = {
+    stops: ['shanghai', ...regions.au.stops, ...regions.nz.stops],
+    lines: [
+      ['flight', 'shanghai', 'melbourne'],
+      ...regions.au.lines,
+      ['flight', 'sydney', 'queenstown'],
+      ...regions.nz.lines,
+      ['flight', 'auckland', 'shanghai']
+    ],
+    note: '上海出发，经澳大利亚、新西兰南北岛，再返回上海。'
+  };
   const lineStyles = {
     flight: { color: '#b34b38', weight: 3, dashArray: '9 8' },
     road: { color: '#47724e', weight: 3 },
@@ -44,7 +56,7 @@
   const status = document.getElementById('routeMapStatus');
   const retry = document.getElementById('retryRouteMap');
   let map, tiles, overlays, libraryPromise, region = 'au', markers = {};
-  let tileErrors = 0, tileTimer;
+  let tileErrors = 0, tileTimer, mapReady = false;
   const latLng = id => stops[id].slice(2, 4);
   const isVisible = () => !document.getElementById('route-map').hidden;
 
@@ -82,7 +94,11 @@
   }
 
   function fitRoute() {
-    if (map) map.fitBounds(regions[region].stops.map(latLng), { padding: [35, 45], animate: false });
+    if (!map) return;
+    if (mapReady) map.stop();
+    map.closePopup();
+    map.invalidateSize({ pan: false });
+    map.fitBounds(regions[region].stops.map(latLng), { padding: [35, 45], animate: false });
   }
 
   function selectStop(id) {
@@ -122,7 +138,7 @@
   }
 
   function initializeMap() {
-    map = L.map(canvas, { scrollWheelZoom: false, attributionControl: true, zoomControl: false, minZoom: 3, maxZoom: 18 });
+    map = L.map(canvas, { scrollWheelZoom: false, attributionControl: true, zoomControl: false, minZoom: 2, maxZoom: 18 });
     L.control.zoom({ position: 'topright', zoomInTitle: '放大地图', zoomOutTitle: '缩小地图' }).addTo(map);
     tiles = L.tileLayer(canvas.dataset.tileUrl, {
       maxZoom: 19, keepBuffer: 1,
@@ -141,6 +157,7 @@
     });
     overlays = L.layerGroup().addTo(map);
     renderRegion();
+    mapReady = true;
     tiles.addTo(map);
   }
 
@@ -167,13 +184,13 @@
       region = button.dataset.mapRegion;
       renderRegion();
       if (!map) show();
+      if (region === 'all' && map && typeof window.notifyTouch === 'function') window.notifyTouch('已显示完整行程');
     };
   });
   document.getElementById('routeMapStops').onclick = event => {
     const button = event.target.closest('[data-map-stop]');
     if (button) selectStop(button.dataset.mapStop);
   };
-  document.getElementById('fitRouteMap').onclick = fitRoute;
   retry.onclick = () => {
     if (tiles) tiles.redraw(); else show();
   };
