@@ -184,3 +184,12 @@ document.querySelectorAll('.route-summary span').forEach(e=>{const text=e.textCo
 
 syncNavigation();
 window.addEventListener('load',()=>requestAnimationFrame(()=>{if(!isOpen(dialog)&&!isOpen(sheet)){if(activeView==='itinerary')scrollToCurrentDay();else window.scrollTo(0,viewScroll[activeView]||0)}}));
+for(const rail of document.querySelectorAll('.date-rail,.weather-grid,.sequence')){
+  let drag=null,suppressClick=false;
+  rail.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;suppressClick=false;drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:rail.scrollLeft,active:false}});
+  rail.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!drag.active){if(Math.abs(dx)<8||Math.abs(dx)<Math.abs(dy))return;drag.active=true;rail.setPointerCapture(e.pointerId);rail.classList.add('is-mouse-dragging')}e.preventDefault();rail.scrollLeft=drag.left-dx;});
+  const finishRailDrag=e=>{if(!drag||e.pointerId!==drag.id)return;suppressClick=drag.active;drag=null;rail.classList.remove('is-mouse-dragging');if(rail.hasPointerCapture(e.pointerId))rail.releasePointerCapture(e.pointerId);setTimeout(()=>suppressClick=false,0)};
+  rail.addEventListener('pointerup',finishRailDrag);rail.addEventListener('pointercancel',finishRailDrag);rail.addEventListener('pointerleave',()=>{if(drag&&!drag.active)drag=null});
+  rail.addEventListener('click',e=>{if(suppressClick){e.preventDefault();e.stopImmediatePropagation()}},true);
+  rail.addEventListener('dragstart',e=>e.preventDefault());
+}
