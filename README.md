@@ -10,11 +10,13 @@
 
 - **今日**：按设备日期显示当天行程。出发前显示 D1，结束后显示返程信息。横滑日期条可预览其他天，点击“今天”恢复自动选择。
 - **行程**：进入时定位当天行程，出发前定位 D1，结束后定位 D15。标题和筛选栏滚动时固定在顶部。点击日期在列表内展开详情，再次点击或按“收起”关闭；一次展开一天，景点介绍可单独展开。
-- **地图**：澳大利亚、新西兰路线图，城市间的航班、巴士和往返线路。
+- **地图**：Leaflet + OpenStreetMap 交互地图，可切换澳大利亚／新西兰，拖动、双指缩放，点击地点查看关联行程。“全程”恢复区域视野。连线表示行程顺序，不代表实际道路或航线。
 
 点击航班号直接打开 FlightAware 对应航班页面。页面可能默认显示最近一班，请核对出行日期。
 
 城市与景点提供中文 Wikipedia 链接。没有对应词条时，提供百科搜索或标明相关词条。
+
+地图组件在首次进入“地图”标签时加载，底图由浏览器直接向 OpenStreetMap 请求，不经过 GitHub Pages。不申请定位权限，不预下载离线地图；按服务端缓存规则复用瓦片。底图请求失败时保留行程标记并提供重试。OpenStreetMap 公共瓦片服务不保证可用性，手机所在网络需要能访问该服务。
 
 ## 天气与手机功能
 
@@ -40,7 +42,9 @@ assets/handbook-content.js      行程、景点和穿衣说明
 assets/handbook.js              日期、天气、导航等交互
 assets/handbook.css             布局与触屏样式
 assets/logbook.css              主手册和资料区共用的日志风格
-assets/route-map.png            路线底图
+assets/route-map.js             交互地图、地点和行程连线
+assets/route-map.css            地图触屏样式
+assets/vendor/leaflet-1.9.4/     Leaflet 组件与许可证
 
 documents.html                 出团通知完整 HTML 与阅读器
 assets/documents.css           阅读器布局
@@ -48,7 +52,7 @@ assets/documents.js            HTML 翻页
 assets/documents/               原 PDF
 ```
 
-复制或部署时保留整个目录。文件保存在本机后，可用支持 JavaScript 的浏览器离线阅读行程、路线图和出团通知。天气、百科、外部地图和航班动态需要联网。通过网址访问时要先加载资源，目前没有自动离线安装功能。
+复制或部署时保留整个目录。文件保存在本机后，可用支持 JavaScript 的浏览器离线阅读行程和出团通知。地图底图、天气、百科、外部地图和航班动态需要联网。通过网址访问时要先加载资源，目前没有自动离线安装功能。
 
 ## 公网访问与更新
 
@@ -79,3 +83,5 @@ python3 -m http.server 48765 --bind <本机局域网IP>
 `python3 scripts/build-notice.py` 使用本地的 pdfplumber 将原 PDF 转成 HTML。脚本保留表格单元格与跨行、跨列关系，并逐页校对全部非空白文字字符；列表符号统一为可显示的圆点。入境物品图的清单按原图逐项转录。若 PDF 页数或表格结构变化，需要先核对脚本中的表格选择。运行前优先使用项目虚拟环境。
 
 发布前运行 `node scripts/version-assets.mjs`，按文件内容更新 HTML 中的静态资源版本，避免浏览器沿用旧脚本。
+
+地图使用 [Leaflet 1.9.4](https://leafletjs.com/) 和 [OpenStreetMap](https://www.openstreetmap.org/copyright)，遵守[瓦片使用政策](https://operations.osmfoundation.org/policies/tiles/)。底图地址配置在 `index.html` 的 `data-tile-url`，更换服务商时同步修改署名。
