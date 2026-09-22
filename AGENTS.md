@@ -10,7 +10,7 @@
 
 - GitHub 仓库：`delta-xv/aunz-travel-handbook`。
 - GitHub Pages 从 `main` 分支根目录发布。
-- 每次完成修改后，检查相关功能，提交并推送到 `main`，然后确认对应提交的 Pages 构建结果。
+- 每次完成修改后，检查相关功能，运行 `node scripts/version-assets.mjs` 更新资源版本，提交并推送到 `main`，然后确认对应提交的 Pages 构建结果。
 - 提交标题使用 `<type>(<scope>): <中文简述>`。
 - 只提交本次任务的修改，不覆盖用户的其他改动，不强制推送。
 - 发布成功后提供线上链接；构建失败或无法推送时如实说明。
