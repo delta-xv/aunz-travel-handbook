@@ -1,12 +1,14 @@
 :root{
-  --navy:#163746;--ink:#163746;--green:#315967;--coral:#a84e3d;
-  --paper:#f7f2e7;--paper2:#faf6ec;--card:#faf6ec;--line:#bac2bd;
-  --muted:#5e7071;--soft:#e6eeee;--sea:#537c80;
+  --navy:#163746;--ink:#163746;--green:#315967;--coral:#853e30;
+  --paper:#f7f2e7;--paper2:#faf6ec;--card:#faf6ec;--line:#aebbb6;
+  --muted:#405659;--soft:#e6eeee;--sea:#537c80;
+  --page-wash:rgba(247,242,231,.24);--surface-wash:rgba(250,246,236,.72);
   --log-serif:"Songti SC","STSong","Noto Serif CJK SC",Georgia,serif;
 }
-body.logbook{background:#e5dfcf;color:var(--ink);-webkit-font-smoothing:antialiased}
+body.logbook{background:#eee8da;color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh;isolation:isolate}
+body.logbook::before{content:'';position:fixed;inset:80px 12px 90px;z-index:-1;pointer-events:none;background:url('aunz-background-portrait.png?v=d4baba12e55f') center / contain no-repeat;mix-blend-mode:multiply;filter:sepia(.45) saturate(.45);opacity:.19}
 .logbook .app{max-width:1200px;box-shadow:0 0 0 1px #b7b6a6}
-.logbook .paper,.logbook-documents .catalog{background-color:var(--paper);background-image:radial-gradient(#766b4b0c .5px,transparent .7px),radial-gradient(#ffffff66 .5px,transparent .8px);background-size:5px 7px,7px 5px;background-position:0 0,2px 3px}
+.logbook .paper,.logbook-documents .catalog{background-color:transparent;background-image:radial-gradient(#766b4b0c .5px,transparent .7px),radial-gradient(#ffffff66 .5px,transparent .8px);background-size:5px 7px,7px 5px;background-position:0 0,2px 3px}
 .logbook .paper{padding-top:20px}.logbook .view,.logbook .footer{max-width:850px}
 .logbook h1,.logbook h2,.logbook h3,.logbook h4{font-family:var(--log-serif)}
 .logbook .icon{display:inline-block;width:20px;height:20px;flex:0 0 20px;vertical-align:middle}
@@ -54,3 +56,11 @@ body.logbook{background:#e5dfcf;color:var(--ink);-webkit-font-smoothing:antialia
 .logbook .is-mouse-dragging{cursor:grabbing;scroll-snap-type:none;user-select:none}
 @media print{.logbook .app{max-width:none}.logbook .mobile-nav{display:none}.logbook .detail-dialog{position:static;max-width:none;height:auto;max-height:none}}
 .logbook .day.expanded>.day-body{display:block;padding:0 2px 20px}.logbook .day.expanded>.day-head>.icon{transform:rotate(90deg)}.logbook .day.expanded>.day-head{border-bottom:1px dashed var(--line);margin-bottom:16px}.logbook .day-body .story>p:first-child{margin-top:0}.logbook .inline-day-actions{display:flex;gap:10px;margin-top:18px}.logbook .inline-day-actions button{flex:1;min-height:48px}
+.logbook .app,.logbook-documents .reader{background:var(--page-wash)}
+.logbook .today-card,.logbook .weather-card,.logbook .today-wear,.logbook .attraction,.logbook .detail-grid,.logbook .date-chip:not([aria-pressed=true]){background:var(--surface-wash)}
+.logbook .day.expanded>.day-body{background:var(--surface-wash)}
+.logbook .wear-guide{background:rgba(230,238,238,.9)}
+.logbook .mobile-nav,.logbook .itinerary-sticky,.logbook-documents .reader-header,.logbook-documents .reader-footer{background:rgba(247,242,231,.97)}
+.logbook-documents .notice-section{background:rgba(250,246,236,.56);padding:14px 10px;border-radius:3px}
+.logbook-documents .notice-table,.logbook-documents .notice-facts{background:rgba(250,246,236,.92)}
+@media print{body.logbook{background:white}body.logbook::before{display:none}.logbook .app,.logbook-documents .reader,.logbook-documents .notice-section{background:white}}

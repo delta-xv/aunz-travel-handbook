@@ -1,6 +1,6 @@
 # 澳新旅行手册
 
-所有设备共用手机界面，最大宽度 430px，宽屏居中展示。日期和天气可用触摸或鼠标拖动。
+所有设备共用手机界面，最大宽度 430px，宽屏居中展示。日期和天气可用触摸或鼠标拖动。主手册与出团通知共用袋鼠、银蕨图片背景，两个图案按手机竖屏分开排列，完整缩放显示，以淡色水印和半透明内容底保持文字清晰；打印时不显示背景图。
 
 澳大利亚、新西兰跟团旅行手册。行程：2026年9月24日—10月8日，12晚15天。
 
@@ -41,7 +41,8 @@ index.html                     主手册
 assets/handbook-content.js      行程、景点和穿衣说明
 assets/handbook.js              日期、天气、导航等交互
 assets/handbook.css             布局与触屏样式
-assets/logbook.css              主手册和资料区共用的日志风格
+assets/logbook.css              主手册和资料区共用的路书风格
+assets/aunz-background-portrait.png  袋鼠与银蕨竖屏背景
 assets/route-map.js             交互地图、地点和行程连线
 assets/route-map.css            地图触屏样式
 assets/vendor/leaflet-1.9.4/     Leaflet 组件与许可证
