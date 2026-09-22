@@ -113,7 +113,7 @@ function syncNavigation(){const route=routeState(),sheetState=history.state?.app
   document.body.classList.toggle('dialog-open',isOpen(sheet));document.querySelector('.app').inert=isOpen(sheet);document.querySelector('.mobile-nav').inert=isOpen(sheet);document.getElementById('modalBackdrop').hidden=!(isOpen(sheet)&&sheet.classList.contains('fallback-dialog'));
   if(returnFocus)requestAnimationFrame(()=>focusQuietly(returnFocus));
   if(!sheetState&&(changed||changedDay)){requestAnimationFrame(()=>{if(activeView==='itinerary'){if(route.day!==null){setItineraryFilter('all');scrollToDay(route.day)}else if(changed)scrollToCurrentDay()}else if(changed)window.scrollTo(0,viewScroll[activeView]||0)})}
-  document.title=(route.day!==null?itinerary[route.day].d+' '+itinerary[route.day].title:document.querySelector(`[data-nav][href="#${activeView}"] span`).textContent)+' · 澳新旅行日志';
+  document.title=(route.day!==null?itinerary[route.day].d+' '+itinerary[route.day].title:document.querySelector(`[data-nav][href="#${activeView}"] span`).textContent)+' · 澳新旅行手册';
 }
 function toggleInlineDay(index){const next=expandedDay===index?null:index;history.replaceState(null,'','#itinerary'+(next===null?'':'/day-'+(next+1)));syncNavigation();requestAnimationFrame(()=>scrollToDay(index))}
 function collapseInlineDay(index){history.replaceState(null,'','#itinerary');syncNavigation();requestAnimationFrame(()=>{scrollToDay(index);focusQuietly(document.querySelector('#day-'+(index+1)+' .day-head'))})}

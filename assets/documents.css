@@ -4,3 +4,4 @@
 @media print{.reader{position:static;height:auto;max-width:none!important}.notice-content{overflow:visible}.notice-page[hidden]{display:block!important}.notice-page{break-before:page}.reader-header,.reader-footer{display:none}.notice-table-wrap{overflow:visible}.notice-table.wide{min-width:0}}
 
 .notice-items th{width:30%}
+.reader-topbar{display:grid;grid-template-columns:1fr auto 1fr}.reader-topbar>.button{justify-self:start}.reader-topbar>.notice-title{grid-column:2}
