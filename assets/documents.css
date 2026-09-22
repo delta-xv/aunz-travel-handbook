@@ -3,3 +3,4 @@
 @media(min-width:700px){.topic-grid{grid-template-columns:repeat(3,1fr)}.page-list{grid-template-columns:1fr 1fr}.reader-header{padding-left:24px;padding-right:24px}.reader-footer{justify-content:center;gap:40px}}
 @media(max-width:350px){.reader-footer{gap:4px;padding-left:8px;padding-right:8px}.reader-footer>button{font-size:12px;padding:8px}.reader-topbar{gap:5px}.reader-topbar>a,.reader-topbar>button{font-size:12px;padding:8px}.document-actions{flex-direction:column}.topic-link{padding:12px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.reader-topbar .notice-title{font-size:19px;line-height:1.3;margin:0;text-align:center}.reader-topbar .button{flex-shrink:0}@media(max-width:350px){.reader-topbar .notice-title{font-size:17px}}
