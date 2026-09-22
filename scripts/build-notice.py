@@ -3,12 +3,17 @@ from html import escape
 from pathlib import Path
 import re
 import hashlib
+import argparse
 import pdfplumber
 from pdfplumber.utils import extract_text
 from lxml import html as dom
 
 ROOT = Path(__file__).resolve().parents[1]
-PDF = ROOT / 'assets/documents/departure-notice.pdf'
+parser = argparse.ArgumentParser(description='从仓库外的原始 PDF 生成公开出团通知')
+parser.add_argument('source', type=Path, help='原始出团通知 PDF 路径')
+PDF = parser.parse_args().source.resolve()
+if PDF.is_relative_to(ROOT):
+    parser.error('原始 PDF 必须保存在仓库外')
 TABLES = {1:[1,2],2:[0],3:[],4:[1],5:[],6:[1],7:[0,1],8:[0],9:[0],10:[0],11:[0],12:[0],13:[0],14:[0],15:[1,2],16:[0]}
 BULLETS = str.maketrans({'\uf06c':'•','\uf06e':'•','\uf0b2':'•'})
 SUBHEADINGS = ['集合与出发', '航班与行李携带', '海关与出入境', '自备物品、气候', '住宿、饮食', '时差、交通、卫生', '货币', '安全', '退税及兑换货币', '其他注意事项', '旅游保险']
@@ -177,6 +182,15 @@ def merge_paragraphs(left, right):
 def organize(pages):
     roots=[dom.fromstring(page) for page in pages]
     expected=Counter(normalized(''.join(root.text_content() for root in roots)))
+    private_rows=0
+    for root in roots:
+        for row in root.xpath('.//tr'):
+            if len(row) and normalized(row[0].text_content()) in {'全程领队','接机牌'}:
+                expected.subtract(Counter(normalized(row.text_content())))
+                row.getparent().remove(row)
+                private_rows+=1
+    if private_rows!=2:
+        raise ValueError('Review personal-information rows before publishing')
     blocks=[]
     removed=0
     for root in roots:
@@ -261,7 +275,7 @@ def organize(pages):
             links.append('<details class="outline-group"><summary>'+escape(group)+'</summary><div class="outline-children">'+''.join(f'<a class="outline-link" href="#{s["id"]}">{escape(s["title"])}<span aria-hidden="true">→</span></a>' for s in items)+'</div></details>')
     outline='<nav id="contents" class="notice-outline" aria-label="出团通知目录"><h2>目录</h2>'+''.join(links)+'</nav>'
     articles='\n'.join(f'<article id="{s["id"]}" class="notice-section" data-title="{escape(s["title"],quote=True)}" aria-labelledby="{s["id"]}-heading" hidden>'+''.join(dom.tostring(el,encoding='unicode',method='html') for el in s['blocks'])+'</article>' for s in sections)
-    print(f'{len(sections)} sections: all retained content verified; excluded paragraph and source page numbers omitted')
+    print(f'{len(sections)} sections: retained content verified; personal-information rows, excluded paragraph and source page numbers omitted')
     return outline+articles
 
 
