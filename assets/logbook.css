@@ -3,7 +3,7 @@
   --paper:#f7f2e7;--paper2:#faf6ec;--card:#faf6ec;--line:#aebbb6;
   --muted:#405659;--soft:#e6eeee;--sea:#537c80;
   --page-wash:rgba(247,242,231,.24);--surface-wash:rgba(250,246,236,.72);
-  --link-ink:#135d79;--link-fill:#e4eff0;--link-line:#87a5af;--link-active:#ccdee3;
+  --link-ink:#135d79;--link-fill:var(--navy);--link-line:var(--navy);--link-active:#ccdee3;
   --log-serif:"Songti SC","STSong","Noto Serif CJK SC",Georgia,serif;
 }
 body.logbook{background:#eee8da;color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh;isolation:isolate}
@@ -63,7 +63,7 @@ body.logbook::before{content:'';position:fixed;inset:80px 12px auto;height:var(-
 .logbook .mobile-nav,.logbook .itinerary-sticky,.logbook-documents .reader-header,.logbook-documents .reader-footer{background:rgba(247,242,231,.97)}
 .logbook-documents .notice-section{background:rgba(250,246,236,.56);padding:14px 10px;border-radius:3px}
 .logbook-documents .notice-table,.logbook-documents .notice-facts{background:rgba(250,246,236,.92)}
-.logbook .flight-link,.logbook .wiki-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:4px 9px;border:1px solid var(--link-line);border-radius:3px;background:var(--link-fill);color:var(--link-ink);text-decoration:none;vertical-align:middle}
+.logbook .flight-link,.logbook .wiki-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:4px 9px;border:1px solid var(--link-line);border-radius:3px;background:var(--link-fill);color:var(--paper2);text-decoration:none;vertical-align:middle}
 .logbook .flight-link{min-height:0;gap:3px;padding:1px 5px;font-weight:600;line-height:1.35;vertical-align:baseline}
 .logbook .wiki-link{max-width:100%;margin:0 0 12px;font-weight:600}
 .logbook .wiki-link>span:first-child{min-width:0;overflow-wrap:anywhere}
@@ -73,11 +73,11 @@ body.logbook::before{content:'';position:fixed;inset:80px 12px auto;height:var(-
 .logbook .weather-detail-link{color:var(--link-ink);text-decoration:underline;text-underline-offset:3px}
 .logbook .notice-link{gap:6px;min-height:44px;padding:7px 9px;border:1px solid var(--navy);border-radius:3px;background:var(--navy);color:var(--paper2);font-weight:600}
 .logbook .notice-link .link-arrow{font-size:20px}
-.logbook .place-button,.logbook .route-stop{border:1px solid var(--link-line);background:var(--link-fill);color:var(--link-ink)}
-.logbook .place-button>span:last-child{color:var(--link-ink)}
+.logbook .place-button,.logbook .route-stop{border:1px solid var(--link-line);background:var(--link-fill);color:var(--paper2)}
+.logbook .place-button>span:last-child{color:var(--paper2)}
 .logbook .attraction{border-color:var(--link-line)}
-.logbook .attraction>summary{margin:0 -14px;padding:13px 14px;background:var(--link-fill);color:var(--link-ink);border-radius:2px;gap:10px}
-.logbook .attraction>summary::after{content:'';width:8px;height:8px;flex:0 0 8px;margin:0 3px 4px auto;border-right:2px solid var(--link-ink);border-bottom:2px solid var(--link-ink);transform:rotate(45deg)}
+.logbook .attraction>summary{margin:0 -14px;padding:13px 14px;background:var(--link-fill);color:var(--paper2);border-radius:2px;gap:10px}
+.logbook .attraction>summary::after{content:'';color:inherit;width:8px;height:8px;flex:0 0 8px;margin:0 3px 4px auto;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
 .logbook .attraction[open]>summary{border-bottom:1px solid var(--link-line);margin-bottom:14px}
 .logbook .attraction[open]>summary::after{content:'';transform:rotate(225deg);margin-bottom:-4px}
 .logbook .flight-link:active,.logbook .wiki-link:active,.logbook .city-link:active,.logbook .notice-link:active,.logbook .place-button:active,.logbook .route-stop:active,.logbook .attraction>summary:active,.logbook .weather-detail-link:active,.logbook .day-head:active{background-color:var(--link-active)}
@@ -97,3 +97,7 @@ body.logbook::before{content:'';position:fixed;inset:80px 12px auto;height:var(-
 
 .logbook .today-date-heading h1{margin:0;color:var(--muted);font-family:inherit;font-size:13px;font-weight:400;line-height:1.6;letter-spacing:.025em}
 .logbook .today-wear{padding:0 14px}.logbook #todayWear .wear-guide{margin:0 0 14px}
+
+.logbook .place-button-label small,.logbook .attraction>summary .attraction-no{color:#cddcde}
+.logbook .route-stop b{color:var(--paper2)}
+.logbook .flight-link:active,.logbook .wiki-link:active,.logbook .place-button:active,.logbook .route-stop:active,.logbook .attraction>summary:active{background:var(--green);border-color:var(--green)}
