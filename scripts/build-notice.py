@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 import hashlib
 import argparse
+import json
 import pdfplumber
 from pdfplumber.utils import extract_text
 from lxml import html as dom
@@ -18,6 +19,11 @@ TABLES = {1:[1,2],2:[0],3:[],4:[1],5:[],6:[1],7:[0,1],8:[0],9:[0],10:[0],11:[0],
 BULLETS = str.maketrans({'\uf06c':'•','\uf06e':'•','\uf0b2':'•'})
 SUBHEADINGS = ['集合与出发', '航班与行李携带', '海关与出入境', '自备物品、气候', '住宿、饮食', '时差、交通、卫生', '货币', '安全', '退税及兑换货币', '其他注意事项', '旅游保险']
 OMITTED_PARAGRAPH = '本团市场价格是49800元/人，如领队发现团里客人有低于市场价格的情况，领队有权在团上收取差价!'
+PUBLIC_CONTACTS = json.loads((ROOT / 'scripts/public-contacts.json').read_text(encoding='utf-8'))
+PASSENGER_LABEL = re.compile(r'(?:顾客|旅客|游客|客人|乘客)姓名\s*[:：].*')
+PASSENGER_NAME = re.compile(r'\b[A-Z]{2,}\s*/\s*[A-Z]{2,}\b')
+PHONE = re.compile(r'(?:\+\s*\d{1,3}|00\s*\d{1,3})[\d ()-]{5,}\d|\b1800[-\s]\d{3}[-\s]\d{3}\b')
+PHONE_LABEL = re.compile(r'(?:Phone|Tel(?:ephone)?|电话)[^:：\n]{0,8}[:：]\s*(\d{5}(?!\d)|[+\d][\d ()-]{3,}\d)',re.I)
 
 def clean(text):
     return text.translate(BULLETS)
@@ -179,18 +185,88 @@ def merge_paragraphs(left, right):
         left.append(child)
 
 
-def organize(pages):
-    roots=[dom.fromstring(page) for page in pages]
-    expected=Counter(normalized(''.join(root.text_content() for root in roots)))
+def remove_content(element, expected):
+    expected.subtract(Counter(normalized(element.text_content())))
+    element.getparent().remove(element)
+
+
+def replace_content(element, text, expected):
+    expected.subtract(Counter(normalized(element.text_content())))
+    for child in list(element):
+        element.remove(child)
+    element.text=text
+    expected.update(Counter(normalized(text)))
+
+
+def sanitize_contacts(roots, expected):
     private_rows=0
     for root in roots:
         for row in root.xpath('.//tr'):
-            if len(row) and normalized(row[0].text_content()) in {'全程领队','接机牌'}:
-                expected.subtract(Counter(normalized(row.text_content())))
-                row.getparent().remove(row)
+            label=normalized(row[0].text_content()) if len(row) else ''
+            if label in {'全程领队','接机牌'}:
+                remove_content(row,expected)
                 private_rows+=1
+            elif label.endswith('地接社'):
+                if len(row)!=4 or normalized(row[2].text_content())!='电话':
+                    raise ValueError('Review agency contact columns before publishing')
+                for cell in list(row)[2:]:
+                    remove_content(cell,expected)
+                row[1].set('colspan','3')
+            elif label=='旅游保险' and any('客服电话' in cell.text_content() for cell in row):
+                insurance=PUBLIC_CONTACTS['insurance']
+                if insurance['match'] not in row[1].text_content():
+                    raise ValueError('Review insurer before publishing contact numbers')
+                phone_text='客服电话：'+insurance['customer']+' 24 小时援助电话：'+' / '.join(insurance['assistance'])
+                replace_content(row[-1],phone_text,expected)
+        for paragraph in root.xpath('.//p'):
+            text=paragraph.text_content()
+            if PASSENGER_LABEL.search(text):
+                replace_content(paragraph,PASSENGER_LABEL.sub('',text).strip(),expected)
     if private_rows!=2:
         raise ValueError('Review personal-information rows before publishing')
+
+
+def sanitize_hotels(blocks, expected):
+    for block in blocks:
+        if block.get('class')!='notice-facts':
+            continue
+        for index,label in enumerate(block):
+            if normalized(label.text_content())!='住宿' or index+1>=len(block):
+                continue
+            lodging=block[index+1]
+            text=normalized(lodging.text_content()).casefold()
+            contact=next((item for item in PUBLIC_CONTACTS['hotels'] if normalized(item['match']).casefold() in text),None)
+            for paragraph in list(lodging):
+                value=paragraph.text_content()
+                if re.match(r'^(?:Phone|Tel|Telephone|电话|联系电话)\s*[:：]',value,re.I):
+                    remove_content(paragraph,expected)
+                elif PHONE.search(value):
+                    replace_content(paragraph,PHONE.sub('',value).strip(),expected)
+            if contact:
+                phone=dom.Element('p')
+                phone.text='电话：'+contact['phone']
+                lodging.append(phone)
+                expected.update(Counter(normalized(phone.text)))
+
+
+def validate_public_content(blocks):
+    allowed={re.sub(r'\D','',item['phone']) for item in PUBLIC_CONTACTS['hotels']}
+    allowed.update(re.sub(r'\D','',phone) for phone in PUBLIC_CONTACTS['insurance']['assistance'])
+    allowed.add(PUBLIC_CONTACTS['insurance']['customer'])
+    for block in blocks:
+        text=block.text_content()
+        if PASSENGER_LABEL.search(text) or PASSENGER_NAME.search(text) or re.search(r'(?<!\d)1[3-9]\d{9}(?!\d)',text):
+            raise ValueError('Personal information remains in notice content')
+        for fragment in block.itertext():
+            for phone in PHONE.findall(fragment)+PHONE_LABEL.findall(fragment):
+                if re.sub(r'\D','',phone) not in allowed:
+                    raise ValueError('Unapproved telephone number in notice content')
+
+
+def organize(pages):
+    roots=[dom.fromstring(page) for page in pages]
+    expected=Counter(normalized(''.join(root.text_content() for root in roots)))
+    sanitize_contacts(roots,expected)
     blocks=[]
     removed=0
     for root in roots:
@@ -217,6 +293,8 @@ def organize(pages):
             blocks.append(el)
     if removed!=1:
         raise ValueError('Expected exactly one excluded paragraph')
+    sanitize_hotels(blocks,expected)
+    validate_public_content(blocks)
     sections=[]
     pending=[]
     fixed={

@@ -1,0 +1,48 @@
+{
+  "insurance": {
+    "match": "中国大地财产保险",
+    "customer": "95590",
+    "assistance": ["+86 21 61461800", "+86 21 61297908"],
+    "sources": [
+      "https://www.ccic-net.com.cn/c/2021-11-21/484820.shtml",
+      "https://www.zhongmin.cn/travel/detail/ip15191_is1.html"
+    ]
+  },
+  "hotels": [
+    {
+      "match": "Element Melbourne Richmond",
+      "phone": "+61 3 9112 8888",
+      "source": "https://www.marriott.com/en-gb/offers/stay-for-breakfast-off-86022/melel-element-melbourne-richmond"
+    },
+    {
+      "match": "Pullman Cairns International",
+      "phone": "+61 7 4031 1300",
+      "source": "https://www.pullmancairnsinternational.com.au/hotel-location/"
+    },
+    {
+      "match": "Sydney Harbour Marriott Hotel at Circular Quay",
+      "phone": "+61 2 9259 7000",
+      "source": "https://www.marriott.com/en-us/hotels/sydmc-sydney-harbour-marriott-hotel-at-circular-quay/experiences/"
+    },
+    {
+      "match": "Rendezvous Heritage Queenstown",
+      "phone": "+64 3 450 1500",
+      "source": "https://rendezvoushotels.co.nz/book-accommodation/queenstown/rendezvous-heritage-hotel-queenstown/"
+    },
+    {
+      "match": "The Hermitage Motel&Lodge",
+      "phone": "+64 3 435 1809",
+      "source": "https://www.hermitage.co.nz/contact"
+    },
+    {
+      "match": "Cordis, Auckland",
+      "phone": "+64 9 379 5132",
+      "source": "https://www.cordishotels.com/en/auckland/"
+    },
+    {
+      "match": "Arawa Park Hotel Rotorua",
+      "phone": "+64 7 349 0099",
+      "source": "https://www.edithotelsandresorts.com/hotels/arawa-park-hotel-rotorua/"
+    }
+  ]
+}
