@@ -94,7 +94,7 @@
   function updateViewControls() {
     const location = todayLocation();
     todayButton.disabled = !location;
-    todayButton.textContent = location ? `今日 · ${location.name}` : '今日地点';
+    todayButton.setAttribute('aria-label', location ? `今日地点：${location.name}` : '今日地点');
     todayButton.setAttribute('aria-pressed', String(viewMode === 'today'));
     locateButton.setAttribute('aria-pressed', String(viewMode === 'location'));
     document.querySelectorAll('[data-map-region]').forEach(button => {
@@ -236,17 +236,7 @@
       const itineraryLink = document.createElement('a');
       itineraryLink.href = `#itinerary/day-${day}`;
       itineraryLink.textContent = `查看 D${day} 行程 →`;
-      const copyButtons = document.createElement('div');
-      copyButtons.className = 'map-popup-copy';
-      [['复制中文', name], ['复制英文', stopEnglishNames[id]]].forEach(([label, value]) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'outline-btn';
-        button.textContent = label;
-        button.onclick = () => window.copyText(value);
-        copyButtons.appendChild(button);
-      });
-      popup.append(heading, english, itineraryLink, copyButtons);
+      popup.append(heading, english, itineraryLink);
       marker.bindPopup(popup, { maxWidth: 220 });
       markers[id] = marker;
     });
