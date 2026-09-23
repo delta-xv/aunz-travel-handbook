@@ -36,6 +36,13 @@
       note: '悉尼飞皇后镇。南岛经库克山至基督城机场，再飞奥克兰；北岛环线回到奥克兰。基督城仅机场中转。'
     }
   };
+  const stopEnglishNames = {
+    shanghai: 'Shanghai', melbourne: 'Melbourne', cairns: 'Cairns', sydney: 'Sydney',
+    queenstown: 'Queenstown', milford: 'Milford Sound', arrowtown: 'Arrowtown', wanaka: 'Wanaka',
+    cook: 'Aoraki / Mount Cook', pukaki: 'Lake Pukaki', tekapo: 'Lake Tekapo',
+    christchurch: 'Christchurch Airport', auckland: 'Auckland', waitomo: 'Waitomo Caves',
+    waiotapu: 'Wai-O-Tapu', rotorua: 'Rotorua', matamata: 'Matamata'
+  };
   regions.all = {
     stops: ['shanghai', ...regions.au.stops, ...regions.nz.stops],
     lines: [
@@ -131,7 +138,28 @@
         title: name, alt: name, riseOnHover: true
       }).on('add', function () { this.getElement().setAttribute('aria-label', name); }).addTo(overlays);
       marker.bindTooltip(name, { direction: 'top', offset: [0, -15] });
-      marker.bindPopup(`<strong>${name}</strong><a href="#itinerary/day-${day}">查看 D${day} 行程 →</a>`, { maxWidth: 220 });
+      const popup = document.createElement('div');
+      const heading = document.createElement('strong');
+      heading.textContent = name;
+      const english = document.createElement('small');
+      english.className = 'map-popup-english';
+      english.lang = 'en';
+      english.textContent = stopEnglishNames[id];
+      const itineraryLink = document.createElement('a');
+      itineraryLink.href = `#itinerary/day-${day}`;
+      itineraryLink.textContent = `查看 D${day} 行程 →`;
+      const copyButtons = document.createElement('div');
+      copyButtons.className = 'map-popup-copy';
+      [['复制中文', name], ['复制英文', stopEnglishNames[id]]].forEach(([label, value]) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'outline-btn';
+        button.textContent = label;
+        button.onclick = () => window.copyText(value);
+        copyButtons.appendChild(button);
+      });
+      popup.append(heading, english, itineraryLink, copyButtons);
+      marker.bindPopup(popup, { maxWidth: 220 });
       markers[id] = marker;
     });
     fitRoute();
@@ -194,5 +222,61 @@
   retry.onclick = () => {
     if (tiles) tiles.redraw(); else show();
   };
-  window.routeMap = { show };
+
+  let placeMap, placeTimer, placeGeneration = 0;
+
+  function clearPlace() {
+    placeGeneration++;
+    clearTimeout(placeTimer);
+    if (placeMap) { placeMap.remove(); placeMap = null; }
+  }
+
+  async function showPlace(element, location, name, message, retryButton) {
+    clearPlace();
+    const generation = placeGeneration;
+    const current = () => generation === placeGeneration && element.isConnected;
+    const report = (text, canRetry = false) => {
+      if (!current()) return;
+      message.textContent = text;
+      message.parentElement.hidden = !text;
+      retryButton.hidden = !canRetry;
+    };
+    retryButton.onclick = () => showPlace(element, location, name, message, retryButton);
+    report('地图加载中…');
+    try {
+      await loadLibrary();
+      if (!current()) return;
+      placeMap = L.map(element, { scrollWheelZoom: false, zoomControl: false, minZoom: 2, maxZoom: 18 })
+        .setView(location.coordinates, location.zoom || 16);
+      if (location.bounds) placeMap.fitBounds(location.bounds, { padding: [25, 35], maxZoom: 16, animate: false });
+      L.control.zoom({ position: 'topright', zoomInTitle: '放大地图', zoomOutTitle: '缩小地图' }).addTo(placeMap);
+      const label = document.createElement('span');
+      label.textContent = name;
+      L.circleMarker(location.coordinates, { radius: 9, color: '#fff', weight: 3, fillColor: '#135d79', fillOpacity: 1 })
+        .bindTooltip(label, { permanent: true, direction: 'top', offset: [0, -12] }).addTo(placeMap);
+      const layer = L.tileLayer(canvas.dataset.tileUrl, {
+        maxZoom: 19, keepBuffer: 1,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+      });
+      let errors = 0;
+      layer.on('loading', () => {
+        if (!current()) return;
+        errors = 0;
+        clearTimeout(placeTimer);
+        report('地图加载中…');
+        placeTimer = setTimeout(() => report('底图加载较慢，可稍后重试。', true), 15000);
+      });
+      layer.on('tileerror', () => { errors++; });
+      layer.on('load', () => {
+        if (!current()) return;
+        clearTimeout(placeTimer);
+        report(errors ? '部分底图未能加载，地点标记仍可查看。' : '', errors > 0);
+      });
+      layer.addTo(placeMap);
+    } catch {
+      report('地图未能加载，请检查网络后重试。', true);
+    }
+  }
+
+  window.routeMap = { show, showPlace, clearPlace };
 })();

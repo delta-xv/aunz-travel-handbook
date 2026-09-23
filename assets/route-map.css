@@ -29,4 +29,16 @@
 .route-marker.visit span{width:23px;height:23px;background:#faf6ec;color:#a84e3d;border-color:#a84e3d}
 .route-marker.transit span{border-radius:3px;background:#163746}
 .interactive-map .leaflet-tooltip{font-size:12px}
+.place-map{height:320px;height:clamp(240px,45svh,400px);width:100%}
+.place-map .leaflet-tooltip{max-width:230px;white-space:nowrap;text-align:center}
+.place-map-status{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);padding:8px 0}
+.place-map-status[hidden],.place-map-status button[hidden]{display:none}
+.place-map-status button{min-height:44px;flex-shrink:0}
+.place-copy{display:grid;gap:8px;margin-top:12px}
+.place-copy-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}
+.place-copy textarea{width:100%;min-width:0;margin:0;min-height:44px;padding:8px;font-family:inherit;font-size:14px;line-height:1.6;color:var(--ink);border:1px solid var(--line);resize:none}
+.place-copy button{min-height:44px;padding:8px;font-size:13px;white-space:nowrap}
+.place-button-label{display:block;min-width:0}.place-button-label>span{display:block}.place-button-label small{display:block;margin-top:3px;color:var(--muted);font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.map-popup-english{display:block;color:var(--muted);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.map-popup-copy{display:flex;gap:6px}.map-popup-copy .outline-btn{flex:1;min-height:44px;padding:6px;font-size:12px;white-space:nowrap}
 @media print{.route-map-toolbar,.route-map-status,.interactive-map{display:none}.route-map-stops{display:grid}}

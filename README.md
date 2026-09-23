@@ -8,7 +8,7 @@
 
 ## 浏览内容
 
-- **今日**：按设备日期显示当天行程。出发前显示 D1，结束后显示返程信息。横滑日期条可预览其他天，点击“今天”恢复自动选择。当天地点以中文列表默认展开，可手动收起。
+- **今日**：按设备日期显示当天行程。出发前显示 D1，结束后显示返程信息。横滑日期条可预览其他天，点击“今天”恢复自动选择。当天地点以中英双语列表默认展开，可手动收起。
 - **行程**：进入时定位当天行程，出发前定位 D1，结束后定位 D15。标题和筛选栏滚动时固定在顶部。点击日期在列表内展开详情，再次点击或按“收起”关闭；一次展开一天，景点介绍可单独展开。
 - **地图**：Leaflet + OpenStreetMap 交互地图，可切换澳大利亚／新西兰，拖动、双指缩放，点击地点查看关联行程。“全程”显示上海往返澳新两国的完整路线，再次点击可关闭地点弹窗并恢复全程视野。澳大利亚／新西兰按钮聚焦对应国家，再次点击恢复该国视野。连线表示行程顺序，不代表实际道路或航线。
 
@@ -18,7 +18,7 @@
 
 城市与景点提供中文 Wikipedia 链接。没有对应词条时，提供百科搜索或标明相关词条。
 
-地图组件在首次进入“地图”标签时加载，底图由浏览器直接向 OpenStreetMap 请求，不经过 GitHub Pages。不申请定位权限，不预下载离线地图；按服务端缓存规则复用瓦片。底图请求失败时保留行程标记并提供重试。OpenStreetMap 公共瓦片服务不保证可用性，手机所在网络需要能访问该服务。
+地图组件在首次打开地点地图或进入“地图”标签时加载，底图由浏览器直接向 OpenStreetMap 请求，不经过 GitHub Pages。不申请定位权限，不预下载离线地图；按服务端缓存规则复用瓦片。底图请求失败时保留行程标记并提供重试。OpenStreetMap 公共瓦片服务不保证可用性，手机所在网络需要能访问该服务。
 
 ## 天气与手机功能
 
@@ -26,10 +26,10 @@
 
 天气缓存 30 分钟，可手动刷新。联网失败时可显示 24 小时内的缓存，并标明时间；更早的缓存不再显示。地点天气时间采用当地时区，获取时间采用设备时区。
 
-地点列表、地图选择面板和复制名称均显示中文；地图链接使用原有地点名称查询。地点面板可选择高德、百度、Apple 或 Google 地图，也可复制中文名称自行搜索。App 是否打开取决于手机、浏览器和应用安装情况，海外地点需核对搜索结果。网页不申请定位权限，路线起点由地图处理。
+点击当天地点或行程内的地点，直接在页内查看可拖动、缩放的地图，同时显示中文、英文名称，并可分别复制。关闭后回到原来的行程位置。52 个地点的坐标及来源保存在 `assets/place-locations.js`，手机端不请求地点搜索服务；湖泊、公园等区域按范围展示。路线图的地点弹窗也支持分别复制中英文名称，不提供第三方地图跳转。
 
 
-返回键可关闭地图面板。每日行程在列表内展开，不使用全屏详情弹窗。原生弹窗或本地存储不可用时也可继续阅读。各品牌真机的地图 App 唤起尚未全部验证。
+返回键可关闭地图面板。每日行程在列表内展开，不使用全屏详情弹窗。原生弹窗或本地存储不可用时也可继续阅读。
 
 ## 出团通知
 
@@ -46,6 +46,7 @@ assets/logbook.css              主手册和资料区共用的路书风格
 assets/aunz-background-portrait.png  袋鼠与银蕨竖屏背景
 assets/background.js            背景尺寸与屏幕方向适配
 assets/route-map.js             交互地图、地点和行程连线
+assets/place-locations.js       地点坐标、范围和公开来源
 assets/route-map.css            地图触屏样式
 assets/vendor/leaflet-1.9.4/     Leaflet 组件与许可证
 
@@ -54,7 +55,7 @@ assets/documents.css           阅读器布局
 assets/documents.js            目录导航与章节切换
 ```
 
-复制或部署时保留整个目录。文件保存在本机后，可用支持 JavaScript 的浏览器离线阅读行程和出团通知。地图底图、天气、百科、外部地图和航班动态需要联网。通过网址访问时要先加载资源，目前没有自动离线安装功能。
+复制或部署时保留整个目录。文件保存在本机后，可用支持 JavaScript 的浏览器离线阅读行程和出团通知。地图底图、天气、百科和航班动态需要联网。通过网址访问时要先加载资源，目前没有自动离线安装功能。
 
 ## 公网访问与更新
 
@@ -76,10 +77,6 @@ python3 -m http.server 48765 --bind <本机局域网IP>
 
 航班采用出团通知中的航班号，并按出行日期查询公开计划时刻。实时延误、取消和登机口以航司通知为准；集合地点、住宿与游览安排以出团通知和领队通知为准。
 
-## 外部链接格式
-
-[高德 URI](https://lbs.amap.com/api/uri-api/guide/search/search)、[百度 Web URI](https://lbsyun.baidu.com/faq/api?title=webapi%2Furi%2Fweb)、[Apple Map Links](https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html)、[Google Maps URLs](https://developers.google.com/maps/documentation/urls/get-started)、[Windy 地点链接](https://community.windy.com/topic/77/windy-com-url-parameters)。
-
 ## 原稿转换
 
 `python3 scripts/build-notice.py /path/to/出团通知.pdf` 使用本地的 pdfplumber 和 lxml 将原 PDF 转成 HTML。脚本识别标题并生成目录，合并连续正文和跨页续行，保留表格单元格与跨行、跨列关系。先逐页校对全部非空白字符，删除领队及接机牌个人信息行、旅客姓名、地接电话、指定的市场价补差段落和 PDF 页码，并将酒店与保险电话统一为公开联系名单中的号码，最后核对其余正文字符；列表符号统一为可显示的圆点。入境物品图的清单按原图逐项转录。若 PDF 页数或表格结构变化，需要先核对脚本中的表格选择。运行前优先使用项目虚拟环境。
@@ -87,3 +84,5 @@ python3 -m http.server 48765 --bind <本机局域网IP>
 发布前运行 `node scripts/version-assets.mjs`，按文件内容更新 HTML 中的静态资源版本，避免浏览器沿用旧脚本。
 
 地图使用 [Leaflet 1.9.4](https://leafletjs.com/) 和 [OpenStreetMap](https://www.openstreetmap.org/copyright)，遵守[瓦片使用政策](https://operations.osmfoundation.org/policies/tiles/)。底图地址配置在 `index.html` 的 `data-tile-url`，更换服务商时同步修改署名。
+
+地点坐标使用 OpenStreetMap（ODbL）和 Wikidata（CC0）公开数据，逐项记录来源。坐标已预先核对并随网页提供，不在运行时批量查询或自动补全地点。
