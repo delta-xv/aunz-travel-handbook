@@ -1,23 +1,23 @@
 (() => {
   const root = new URL('.', document.currentScript.src);
   const stops = {
-    shanghai: ['沪', '上海', 31.2304, 121.4737, 'transit', 1],
-    melbourne: ['1', '墨尔本', -37.8136, 144.9631, 'stay', 2],
-    cairns: ['2', '凯恩斯', -16.9186, 145.7781, 'stay', 5],
-    sydney: ['3', '悉尼', -33.8688, 151.2093, 'stay', 7],
-    queenstown: ['4', '皇后镇', -45.0312, 168.6626, 'stay', 8],
-    milford: ['A', '米佛峡湾', -44.671, 167.926, 'visit', 9],
-    arrowtown: ['B', '箭镇', -44.9425, 168.8328, 'visit', 11],
-    wanaka: ['C', '瓦纳卡', -44.7, 169.15, 'visit', 11],
-    cook: ['5', '库克山', -43.735, 170.096, 'stay', 11],
-    pukaki: ['D', '普卡基湖', -44.17, 170.18, 'visit', 12],
-    tekapo: ['E', '蒂卡波', -44.004, 170.477, 'visit', 12],
-    christchurch: ['6', '基督城机场', -43.4894, 172.5322, 'transit', 12],
-    auckland: ['7/9', '奥克兰', -36.8485, 174.7633, 'stay', 13],
-    waitomo: ['F', '怀托摩', -38.26, 175.10, 'visit', 13],
-    waiotapu: ['G', '怀奥塔普', -38.36, 176.37, 'visit', 13],
-    rotorua: ['8', '罗托鲁瓦', -38.1368, 176.2497, 'stay', 13],
-    matamata: ['H', '玛塔玛塔', -37.81, 175.77, 'visit', 14]
+    shanghai: ["上海",31.2304,121.4737,1],
+    melbourne: ["墨尔本",-37.8136,144.9631,2],
+    cairns: ["凯恩斯",-16.9186,145.7781,5],
+    sydney: ["悉尼",-33.8688,151.2093,7],
+    queenstown: ["皇后镇",-45.0312,168.6626,8],
+    milford: ["米佛峡湾",-44.671,167.926,9],
+    arrowtown: ["箭镇",-44.9425,168.8328,11],
+    wanaka: ["瓦纳卡",-44.7,169.15,11],
+    cook: ["库克山",-43.735,170.096,11],
+    pukaki: ["普卡基湖",-44.17,170.18,12],
+    tekapo: ["蒂卡波",-44.004,170.477,12],
+    christchurch: ["基督城机场",-43.4894,172.5322,12],
+    auckland: ["奥克兰",-36.8485,174.7633,13],
+    waitomo: ["怀托摩",-38.26,175.1,13],
+    waiotapu: ["怀奥塔普",-38.36,176.37,13],
+    rotorua: ["罗托鲁瓦",-38.1368,176.2497,13],
+    matamata: ["玛塔玛塔",-37.81,175.77,14]
   };
   const regions = {
     au: {
@@ -67,7 +67,7 @@
   let viewMode = 'region', todayMarker, positionMarker, accuracyCircle, viewRevision = 0;
   let locationAttempted = false, manualView = false;
   let tileErrors = 0, tileTimer, mapReady = false;
-  const latLng = id => stops[id].slice(2, 4);
+  const latLng = id => stops[id].slice(1, 3);
   const isVisible = () => !document.getElementById('route-map').hidden;
 
   function mapDateKey(now = new Date()) {
@@ -87,7 +87,7 @@
     const locations = [null, 'melbourne', 'Twelve Apostles', 'melbourne', 'cairns', 'Kuranda', 'sydney', 'queenstown', 'milford', 'queenstown', 'cook', 'tekapo', 'rotorua', 'auckland'];
     const id = locations[day];
     if (!id) return null;
-    return stops[id] ? { name: stops[id][1], coordinates: latLng(id) } : { name: placeNames[id], coordinates: placeLocations[id].coordinates };
+    return stops[id] ? { name: stops[id][0], coordinates: latLng(id) } : { name: placeNames[id], coordinates: placeLocations[id].coordinates };
   }
 
   function updateViewControls() {
@@ -202,8 +202,8 @@
     updateViewControls();
     document.getElementById('routeMapNote').textContent = data.note;
     document.getElementById('routeMapStops').innerHTML = data.stops.map(id => {
-      const [label, name] = stops[id];
-      return `<button type="button" class="route-stop" data-map-stop="${id}"><b>${label}</b>${name}</button>`;
+      const [name] = stops[id];
+      return `<button type="button" class="route-stop" data-map-stop="${id}">${name}</button>`;
     }).join('');
     if (!map) return;
     overlays.clearLayers();
@@ -212,9 +212,9 @@
       L.polyline(ids.map(latLng), { ...lineStyles[type], interactive: false }).addTo(overlays);
     });
     data.stops.forEach(id => {
-      const [label, name, lat, lng, kind, day] = stops[id];
+      const [name, lat, lng, day] = stops[id];
       const marker = L.marker([lat, lng], {
-        icon: L.divIcon({ className: `route-marker ${kind}`, html: `<span>${label}</span>`, iconSize: [40, 40], iconAnchor: [20, 20] }),
+        icon: L.divIcon({ className: 'route-marker', html: '<span aria-hidden="true"></span>', iconSize: [44, 44], iconAnchor: [22, 22] }),
         title: name, alt: name, riseOnHover: true
       }).on('add', function () { this.getElement().setAttribute('aria-label', name); }).addTo(overlays);
       marker.bindTooltip(name, { direction: 'top', offset: [0, -15] });

@@ -101,7 +101,6 @@ body.logbook::before{content:'';position:fixed;inset:80px 12px auto;height:var(-
 
 .logbook .place-button-label small{color:var(--muted)}
 .logbook .attraction>summary .attraction-no{color:var(--muted)}
-.logbook .route-stop b{color:var(--ink)}
 .logbook .flight-link:active,.logbook .wiki-link:active{background:var(--green);border-color:var(--green)}
 .logbook .primary-btn:active,.logbook .route-stop:active,.logbook .attraction>summary:active{background:transparent;border-color:var(--green);color:var(--green)}
 .logbook-documents .button{background:transparent}
