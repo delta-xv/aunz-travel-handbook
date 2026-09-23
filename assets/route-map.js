@@ -62,10 +62,22 @@
   const canvas = document.getElementById('interactiveMap');
   const status = document.getElementById('routeMapStatus');
   const retry = document.getElementById('retryRouteMap');
-  let map, tiles, overlays, libraryPromise, region = 'au', markers = {};
+  let map, tiles, overlays, libraryPromise, region = 'all', regionDate = '', markers = {};
   let tileErrors = 0, tileTimer, mapReady = false;
   const latLng = id => stops[id].slice(2, 4);
   const isVisible = () => !document.getElementById('route-map').hidden;
+
+  function mapDateKey(now = new Date()) {
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }
+
+  function defaultRegion(now = new Date()) {
+    const date = mapDateKey(now);
+    const day = itinerary.findIndex(item => '2026-' + item.date.replace('/', '-') === date);
+    if (day >= 1 && day <= 6) return 'au';
+    if (day >= 7 && day <= 13) return 'nz';
+    return 'all';
+  }
 
   function setStatus(message, canRetry = false) {
     status.textContent = message;
@@ -191,6 +203,13 @@
 
   async function show() {
     if (!isVisible()) return;
+    const now = new Date();
+    const date = mapDateKey(now);
+    if (regionDate !== date) {
+      regionDate = date;
+      region = defaultRegion(now);
+      renderRegion();
+    }
     renderRegionControls();
     if (map) { map.invalidateSize({ pan: false }); return; }
     setStatus('地图加载中…');
@@ -210,6 +229,7 @@
   document.querySelectorAll('[data-map-region]').forEach(button => {
     button.onclick = () => {
       region = button.dataset.mapRegion;
+      regionDate = mapDateKey();
       renderRegion();
       if (!map) show();
       if (region === 'all' && map && typeof window.notifyTouch === 'function') window.notifyTouch('已显示完整行程');
