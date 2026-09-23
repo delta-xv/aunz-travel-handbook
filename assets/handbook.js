@@ -82,13 +82,45 @@ const attractionPlaceAliases={
  '悉尼观鲸航线':'Circular Quay','皇家植物园':'Royal Botanic Garden Sydney','皇后镇镇中心':'Queenstown Mall','卡瓦劳吊桥':'Kawarau Gorge Suspension Bridge','Aoraki / 库克山国家公园':'Aoraki Mount Cook National Park','边界犬雕像':'Church of the Good Shepherd'
 };
 function attractionPlace(x,name){return x.places.find(place=>placeName(place)===name||place===name||place===attractionPlaceAliases[name])}
+const attractionEnglishNames={
+ '大堡礁海域':'Great Barrier Reef','原住民文化表演':'Aboriginal Cultural Performance','库兰达野生动物园':'Koala & Wildlife Park',
+ '悉尼':'Sydney','悉尼观鲸航线':'Sydney Whale Watching','皇后镇':'Queenstown','高空跳伞':'Skydiving','边界犬雕像':'Border Collie Statue','玛塔玛塔':'Matamata'
+};
+function attractionCard(x,index){
+ const site=attractions[x.d][index],place=attractionPlace(x,site[0]),english=attractionEnglishNames[site[0]]||place||site[0];
+ const name=site[0]===place?placeName(place):site[0];
+ const guide=(deepGuides[x.d]||[])[index]||[];
+ return {name,english,location:placeLocations[place]||window.routeMap.locationForName(english),mapName:place?placeName(place):name,
+   intro:[site[1],guide[0]].filter(Boolean),tips:[guide[1],guide[2]].filter(Boolean),photos:[guide[3]].filter(Boolean)};
+}
+function locationCard(day,name){
+ const x=itinerary[day],matches=(attractions[x.d]||[]).map((site,index)=>({site,index})).filter(({site})=>attractionPlace(x,site[0])===name);
+ const cards=matches.map(({index})=>attractionCard(x,index));
+ return {name:placeName(name),english:name,location:placeLocations[name],mapName:placeName(name),
+   intro:[...new Set(cards.flatMap(card=>card.intro))],tips:cards.length?[...new Set(cards.flatMap(card=>card.tips))]:[x.summary],photos:[...new Set(cards.flatMap(card=>card.photos))]};
+}
+function placeCardMarkup(card){
+ const section=(title,lines)=>lines.length?`<div class="guide-line"><b>${title}</b>${lines.map(text=>`<p>${escapeHtml(text)}</p>`).join('')}</div>`:'';
+ return `${section('简介',card.intro)}${card.location?`<div class="place-card-map"><div class="interactive-map place-map" aria-label="${escapeHtml(card.mapName)}地图，可拖动和缩放" role="region"></div><div class="place-map-status"><span role="status"></span><button class="outline-btn" hidden>重试</button></div>${card.mapName!==card.name?`<p class="map-reference">地图位置：${escapeHtml(card.mapName)}</p>`:''}</div>`:'<p class="map-reference">具体地点以当天安排为准。</p>'}${section('游览提示',card.tips)}${section('拍摄与提醒',card.photos)}`;
+}
+function mountPlaceCard(root,card){
+ const element=root.querySelector('.place-map');if(!element||!card.location||window.routeMap.hasPlace(element))return;
+ const status=root.querySelector('.place-map-status');
+ window.routeMap.showPlace(element,card.location,card.mapName,status.querySelector('span'),status.querySelector('button'));
+}
+function syncAttractionMaps(){
+ document.querySelectorAll('.attraction[data-site]').forEach(el=>{
+   const element=el.querySelector('.place-map');if(!element)return;
+   if(el.open&&!el.closest('.view').hidden&&!el.closest('.day-body').hidden){mountPlaceCard(el,attractionCard(itinerary[Number(el.dataset.day)],Number(el.dataset.site)))}else window.routeMap.clearPlace(element);
+ });
+}
 function detailMarkup(x){
  const sites=attractions[x.d]||[],index=Number(x.d.slice(1))-1;
  const usedPlaces=new Set(sites.map(a=>attractionPlace(x,a[0])).filter(Boolean));
  const otherPlaces=dayPlaces(index).filter(name=>!usedPlaces.has(name));
  return `<div class="story"><section class="day-visit" id="day-visit-${index+1}" tabindex="-1"><h3>${sites.length?'游览安排':'当天安排'}</h3><p>${flightLinks(x.summary)}</p>${sites.length?`<div class="attraction-list">${sites.map((a,j)=>{
- const guide=(deepGuides[x.d]||[])[j]||[],place=attractionPlace(x,a[0]);
- return `<details class="attraction"><summary><span class="attraction-no">${String(j+1).padStart(2,'0')}</span>${escapeHtml(a[0])}</summary><div class="deep-guide">${a[1]||guide[0]?'':wikiLink(a[0])}<div class="guide-line"><b>简介</b><span>${a[1]}</span><span>${guide[0]||''}</span></div><div class="guide-line"><b>游览提示</b><span>${guide[1]||''}</span><span>${guide[2]||''}</span></div>${guide[3]?`<details class="mini-guide"><summary>拍摄与提醒</summary><p>${guide[3]}</p></details>`:''}${place?placeButton(x,place):''}</div></details>`
+ const card=attractionCard(x,j);
+ return `<details class="attraction" data-day="${index}" data-site="${j}"><summary><span class="attraction-no">${String(j+1).padStart(2,'0')}</span><span class="attraction-label"><span>${escapeHtml(card.name)}</span><small lang="en">${escapeHtml(card.english)}</small></span></summary><div class="deep-guide">${placeCardMarkup(card)}</div></details>`
  }).join('')}</div>`:''}${x.warn?`<p class="warning">${x.warn}</p>`:''}</section><details class="day-practical"><summary>当日信息</summary><div class="detail-grid"><div><b>交通</b>${flightLinks(x.time)}</div><div><b>餐食</b>${x.meal}</div><div><b>住宿</b>${x.hotel}</div><div><b>安排</b>${['D4','D10'].includes(x.d)?'自由活动 + 集合':'跟团安排'}</div></div>${otherPlaces.length?`<div class="places">${otherPlaces.map(name=>placeButton(x,name)).join('')}</div>`:''}</details></div>`;
 }
 itinerary.forEach((x,i)=>{const el=document.createElement('article');el.id='day-'+(i+1);el.className='day card';el.innerHTML=`<button class="day-head" id="day-heading-${i+1}" aria-expanded="false" aria-controls="day-body-${i+1}"><span class="day-index"><b>${x.d}</b><small>${x.date}</small></span><span class="day-copy"><span class="day-title">${x.title}</span><span class="day-caption">${x.time}</span></span>${logbookIcon('arrow')}</button><div class="day-body" id="day-body-${i+1}" role="region" aria-labelledby="day-heading-${i+1}" hidden>${detailMarkup(x)}<div class="inline-day-actions"><button class="outline-btn" data-collapse-day="${i}">收起</button></div></div>`;el.querySelector('button').onclick=()=>toggleInlineDay(i);document.getElementById('timeline').appendChild(el)});
@@ -99,7 +131,7 @@ if('scrollRestoration' in history)history.scrollRestoration='manual';
 function isOpen(el){return el.hasAttribute('open')}
 function focusQuietly(el){try{el?.focus({preventScroll:true})}catch{el?.focus()}}
 function openModal(el){if(isOpen(el))return;if(typeof el.showModal==='function')el.showModal();else{el.setAttribute('open','');el.classList.add('fallback-dialog');el.setAttribute('role','dialog');el.setAttribute('aria-modal','true')}}
-function closeModal(el){if(!isOpen(el))return;if(el===sheet)window.routeMap.clearPlace();if(typeof el.close==='function'&&!el.classList.contains('fallback-dialog'))el.close();else el.removeAttribute('open')}
+function closeModal(el){if(!isOpen(el))return;if(el===sheet)window.routeMap.clearPlace(sheet.querySelector('.place-map'));if(typeof el.close==='function'&&!el.classList.contains('fallback-dialog'))el.close();else el.removeAttribute('open')}
 function routeState(){const parts=location.hash.slice(1).split('/'),match=/^day-(\d+)$/.exec(parts[1]||'');const day=match&&Number(match[1])>=1&&Number(match[1])<=15?Number(match[1])-1:null;return{view:day!==null?'itinerary':viewIds.includes(parts[0])?parts[0]:'today',day,visit:day!==null&&parts[2]==='visit'}}
 function setExpandedDay(index){expandedDay=index;document.querySelectorAll('.day').forEach((row,i)=>{const open=i===index;row.classList.toggle('expanded',open);row.querySelector('.day-head').setAttribute('aria-expanded',String(open));row.querySelector('.day-body').hidden=!open})}
 function scrollToDay(index,visit=false){if(activeView!=='itinerary'||isOpen(sheet))return;const row=document.getElementById((visit?'day-visit-':'day-')+(index+1));if(!row||row.hidden)return;window.scrollTo({top:Math.max(0,scrollY+row.getBoundingClientRect().top-12),behavior:'auto'})}
@@ -108,6 +140,7 @@ function syncNavigation(){const route=routeState(),sheetState=history.state?.app
   if(changed){if(activeView)viewScroll[activeView]=scrollY;activeView=route.view;document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==activeView);document.querySelectorAll('[data-nav]').forEach(a=>{const active=a.hash==='#'+activeView;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')})}
   if(activeView==='route-map')window.routeMap.show();
   setExpandedDay(route.view==='itinerary'?route.day:null);
+  syncAttractionMaps();
   if(sheetState){const key=JSON.stringify(sheetState);if(key!==renderedSheet){renderSheet(sheetState);renderedSheet=key}const wasOpen=isOpen(sheet);openModal(sheet);if(!wasOpen)focusQuietly(document.getElementById('closeSheet'))}else if(isOpen(sheet)){closeModal(sheet);renderedSheet='';returnFocus=sheetOpener}
   document.body.classList.toggle('dialog-open',isOpen(sheet));document.querySelector('.app').inert=isOpen(sheet);document.querySelector('.mobile-nav').inert=isOpen(sheet);document.getElementById('modalBackdrop').hidden=!(isOpen(sheet)&&sheet.classList.contains('fallback-dialog'));
   if(returnFocus)requestAnimationFrame(()=>{window.scrollTo({top:sheetScrollY,behavior:'instant'});focusQuietly(returnFocus)});
@@ -139,18 +172,24 @@ const dayCities=['shanghai','melbourne','coast','melbourne','cairns','cairns','s
 function dayPlaces(index){const places=itinerary[index].places;return places.length?places:['Shanghai Pudong International Airport']}
 function placeName(name){return placeNames[name]||name}
 function placeCopyName(name,language='zh'){const country=({zh:{cn:'中国',au:'澳大利亚',nz:'新西兰'},en:{cn:'China',au:'Australia',nz:'New Zealand'}}[language])[placeLocations[name]?.country];return (language==='en'?name:placeName(name))+(country?(language==='en'?', ':'，')+country:'')}
-function placeButton(x,name){const index=Number(x.d.slice(1))-1,j=dayPlaces(index).indexOf(name);return `<button class="place place-button" data-place-day="${index}" data-place-index="${j}" aria-haspopup="dialog" aria-label="查看${escapeHtml(placeName(name))}地图"><span class="place-button-label"><span>⌖ ${escapeHtml(placeName(name))}</span><small lang="en">${escapeHtml(name)}</small></span><span aria-hidden="true">›</span></button>`}
+function placeButton(x,name){const index=Number(x.d.slice(1))-1,j=dayPlaces(index).indexOf(name);return `<button class="place place-button" data-place-day="${index}" data-place-index="${j}" aria-haspopup="dialog" aria-label="查看${escapeHtml(placeName(name))}详情"><span class="place-button-label"><span>⌖ ${escapeHtml(placeName(name))}</span><small lang="en">${escapeHtml(name)}</small></span><span aria-hidden="true">›</span></button>`}
 function placeButtons(x,heading=true){const index=Number(x.d.slice(1))-1;return `${heading?'<div class="places-label">地点与路线</div>':''}<div class="places">${dayPlaces(index).map(name=>placeButton(x,name)).join('')}</div>`}
 function notifyTouch(message){if(isOpen(sheet))document.getElementById('sheetStatus').textContent=message;const toast=document.getElementById('touchToast');toast.textContent=message;toast.classList.add('visible');clearTimeout(notifyTouch.timer);notifyTouch.timer=setTimeout(()=>toast.classList.remove('visible'),3000)}
 async function copyText(text,field){if(window.isSecureContext&&navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(text);notifyTouch('已复制');return true}catch{}}if(field){field.focus();field.select();field.setSelectionRange(0,field.value.length);try{if(document.execCommand('copy')){notifyTouch('已复制');return true}}catch{}document.getElementById('sheetStatus').textContent='请长按文字，选择“复制”。';return false}openSheet({type:'copy',text});return false}
-function renderSheet(data){window.routeMap.clearPlace();const title=document.getElementById('sheetTitle'),content=document.getElementById('sheetContent');content.scrollTop=0;document.getElementById('sheetStatus').textContent='';
-  if(data.type==='map'){const name=dayPlaces(data.day)[data.place];if(!name){content.textContent='地点不存在';return}title.textContent=placeName(name);content.innerHTML=`<div id="placeMapCanvas" class="interactive-map place-map" role="region" aria-label="地点地图，可拖动和缩放"></div><div class="place-map-status"><span id="placeMapStatus" role="status"></span><button id="retryPlaceMap" class="outline-btn" hidden>重试</button></div><div class="place-names"><p>${escapeHtml(placeCopyName(name))}</p><p lang="en">${escapeHtml(placeCopyName(name,'en'))}</p></div>`;
-    const point=placeLocations[name];if(point){window.routeMap.showPlace(document.getElementById('placeMapCanvas'),point,placeName(name),document.getElementById('placeMapStatus'),document.getElementById('retryPlaceMap'))}else{document.getElementById('placeMapCanvas').hidden=true;document.getElementById('placeMapStatus').textContent='该地点暂无坐标。'}
-
-  }else{title.textContent='复制内容';content.innerHTML=`<textarea id="copyField" readonly rows="7">${escapeHtml(data.text)}</textarea><button class="primary-btn sheet-copy" id="copySheet">复制内容</button>`}
+function renderSheet(data){window.routeMap.clearPlace(sheet.querySelector('.place-map'));const title=document.getElementById('sheetTitle'),content=document.getElementById('sheetContent');content.scrollTop=0;document.getElementById('sheetStatus').textContent='';
+  const english=document.getElementById('sheetEnglish');
+  if(data.type==='map'){
+    const name=dayPlaces(data.day)[data.place];if(!name){content.textContent='地点不存在';return}
+    const card=locationCard(data.day,name);title.textContent=card.name;english.textContent=card.english;english.hidden=false;
+    content.innerHTML=`<div class="deep-guide place-card-content">${placeCardMarkup(card)}</div>`;
+    const cardRoot=content.firstElementChild;
+    requestAnimationFrame(()=>{if(isOpen(sheet)&&cardRoot.isConnected)mountPlaceCard(cardRoot,card)});
+  }else{english.hidden=true;title.textContent='复制内容';content.innerHTML=`<textarea id="copyField" readonly rows="7">${escapeHtml(data.text)}</textarea><button class="primary-btn sheet-copy" id="copySheet">复制内容</button>`}
   const copy=document.getElementById('copySheet');if(copy)copy.onclick=()=>{const field=document.getElementById('copyField');copyText(field.value,field)};
 }
+document.addEventListener('toggle',e=>{if(e.target.matches('.attraction[data-site]'))syncAttractionMaps()},true);
 document.addEventListener('click',e=>{const button=e.target.closest('[data-place-day]');if(button)openSheet({type:'map',day:Number(button.dataset.placeDay),place:Number(button.dataset.placeIndex)},button)});
+
 const dateRail=document.getElementById('dateRail');let selectedDay='auto';
 dateRail.innerHTML='<button class="date-chip" data-day="auto" aria-pressed="true"><span>自动</span><strong>今天</strong></button>'+itinerary.map((x,i)=>`<button class="date-chip" data-day="${i}" aria-pressed="false" aria-label="${x.date} ${x.d} ${escapeHtml(x.title)}"><span>${x.date}</span><strong>${x.d}</strong></button>`).join('');
 dateRail.addEventListener('click',e=>{const button=e.target.closest('[data-day]');if(!button)return;selectedDay=button.dataset.day;renderToday();button.scrollIntoView({block:'nearest',inline:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});

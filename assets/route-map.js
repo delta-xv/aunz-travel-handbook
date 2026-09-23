@@ -324,18 +324,21 @@
     if (tiles) tiles.redraw(); else show();
   };
 
-  let placeMap, placeTimer, placeGeneration = 0;
+  const placeMaps = new Map();
 
-  function clearPlace() {
-    placeGeneration++;
-    clearTimeout(placeTimer);
-    if (placeMap) { placeMap.remove(); placeMap = null; }
+  function clearPlace(element) {
+    const entry = placeMaps.get(element);
+    if (!entry) return;
+    placeMaps.delete(element);
+    clearTimeout(entry.timer);
+    if (entry.map) entry.map.remove();
   }
 
   async function showPlace(element, location, name, message, retryButton) {
-    clearPlace();
-    const generation = placeGeneration;
-    const current = () => generation === placeGeneration && element.isConnected;
+    clearPlace(element);
+    const entry = { map: null, timer: null };
+    placeMaps.set(element, entry);
+    const current = () => placeMaps.get(element) === entry && element.isConnected;
     const report = (text, canRetry = false) => {
       if (!current()) return;
       message.textContent = text;
@@ -347,7 +350,7 @@
     try {
       await loadLibrary();
       if (!current()) return;
-      placeMap = L.map(element, { scrollWheelZoom: false, zoomControl: false, minZoom: 2, maxZoom: 18 })
+      const placeMap = entry.map = L.map(element, { scrollWheelZoom: false, zoomControl: false, minZoom: 2, maxZoom: 18 })
         .setView(location.coordinates, location.zoom || 16);
       if (location.bounds) placeMap.fitBounds(location.bounds, { padding: [25, 35], maxZoom: 16, animate: false });
       L.control.zoom({ position: 'topright', zoomInTitle: '放大地图', zoomOutTitle: '缩小地图' }).addTo(placeMap);
@@ -363,14 +366,14 @@
       layer.on('loading', () => {
         if (!current()) return;
         errors = 0;
-        clearTimeout(placeTimer);
+        clearTimeout(entry.timer);
         report('地图加载中…');
-        placeTimer = setTimeout(() => report('地图加载较慢，请稍后重试。', true), 15000);
+        entry.timer = setTimeout(() => report('地图加载较慢，请稍后重试。', true), 15000);
       });
       layer.on('tileerror', () => { errors++; });
       layer.on('load', () => {
         if (!current()) return;
-        clearTimeout(placeTimer);
+        clearTimeout(entry.timer);
         report(errors ? '地图未完全加载，可重试。' : '', errors > 0);
       });
       layer.addTo(placeMap);
@@ -379,5 +382,12 @@
     }
   }
 
-  window.routeMap = { show, showPlace, clearPlace };
+  window.routeMap = {
+    show, showPlace, clearPlace,
+    hasPlace: element => placeMaps.has(element),
+    locationForName: name => {
+      const id = Object.keys(stopEnglishNames).find(id => stopEnglishNames[id] === name);
+      return id ? { coordinates: latLng(id), zoom: 12 } : null;
+    }
+  };
 })();
