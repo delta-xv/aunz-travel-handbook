@@ -71,7 +71,7 @@ body.logbook::before{content:'';position:fixed;inset:80px 12px auto;height:var(-
 .logbook .city-link{display:inline-flex;align-items:center;gap:5px;min-height:44px;color:var(--link-ink);text-decoration:none;border-radius:2px}
 .logbook .city-link>span:first-child{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:4px}
 .logbook .weather-detail-link{color:var(--link-ink);text-decoration:underline;text-underline-offset:3px}
-.logbook .notice-link{gap:6px;min-height:44px;padding:7px 9px;border:1px solid var(--link-line);border-radius:3px;background:var(--link-fill);color:var(--link-ink);font-weight:600}
+.logbook .notice-link{gap:6px;min-height:44px;padding:7px 9px;border:1px solid var(--navy);border-radius:3px;background:var(--navy);color:var(--paper2);font-weight:600}
 .logbook .notice-link .link-arrow{font-size:20px}
 .logbook .place-button,.logbook .route-stop{border:1px solid var(--link-line);background:var(--link-fill);color:var(--link-ink)}
 .logbook .place-button>span:last-child{color:var(--link-ink)}
@@ -82,14 +82,18 @@ body.logbook::before{content:'';position:fixed;inset:80px 12px auto;height:var(-
 .logbook .attraction[open]>summary::after{content:'';transform:rotate(225deg);margin-bottom:-4px}
 .logbook .flight-link:active,.logbook .wiki-link:active,.logbook .city-link:active,.logbook .notice-link:active,.logbook .place-button:active,.logbook .route-stop:active,.logbook .attraction>summary:active,.logbook .weather-detail-link:active,.logbook .day-head:active{background-color:var(--link-active)}
 .logbook .place-button:active{filter:none}
+.logbook .notice-link:active{background:var(--green);border-color:var(--green);color:var(--paper2)}
 .logbook .today-actions{display:block}
 .logbook .today-places{margin-top:16px;padding:0 14px;background:var(--surface-wash)}
-.logbook .today-places>summary{display:flex;align-items:center;gap:10px;min-height:48px;list-style:none;color:var(--link-ink);font:600 17px var(--log-serif);cursor:pointer}
-.logbook .today-places>summary::-webkit-details-marker{display:none}
-.logbook .today-places>summary::after{content:'';width:8px;height:8px;margin:0 3px 4px auto;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
-.logbook .today-places[open]>summary::after{transform:rotate(225deg);margin-bottom:-4px}
+.logbook .today-places>summary,.logbook .today-wear>summary{padding:12px 0;display:flex;align-items:center;gap:10px;min-height:48px;list-style:none;color:var(--link-ink);font:600 17px var(--log-serif);cursor:pointer}
+.logbook .today-places>summary::-webkit-details-marker,.logbook .today-wear>summary::-webkit-details-marker{display:none}
+.logbook .today-places>summary::after,.logbook .today-wear>summary::after{content:'';width:8px;height:8px;margin:0 3px 4px auto;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
+.logbook .today-places[open]>summary::after,.logbook .today-wear[open]>summary::after{transform:rotate(225deg);margin-bottom:-4px}
 .logbook .today-places .places{margin:0;padding-bottom:14px}
 .logbook .today-places .place-button{min-height:44px;padding:9px 11px}
 .logbook .today-places .place-button>span:last-child{font-size:20px;line-height:1}
-.logbook .today-places>summary:active{background:var(--link-active)}
+.logbook .today-places>summary:active,.logbook .today-wear>summary:active{background:var(--link-active)}
 @media print{body.logbook{background:white}body.logbook::before{display:none}.logbook .app,.logbook-documents .reader,.logbook-documents .notice-section{background:white}}
+
+.logbook .today-date-heading h1{margin:0;color:var(--muted);font-family:inherit;font-size:13px;font-weight:400;line-height:1.6;letter-spacing:.025em}
+.logbook .today-wear{padding:0 14px}.logbook #todayWear .wear-guide{margin:0 0 14px}
