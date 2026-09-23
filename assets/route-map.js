@@ -62,11 +62,10 @@
   const canvas = document.getElementById('interactiveMap');
   const status = document.getElementById('routeMapStatus');
   const retry = document.getElementById('retryRouteMap');
-  const todayButton = document.getElementById('todayRouteMap');
-  const locateButton = document.getElementById('locateRouteMap');
   const locationStatus = document.getElementById('routeLocationStatus');
   let map, tiles, overlays, libraryPromise, region = 'all', regionDate = '', markers = {};
   let viewMode = 'region', todayMarker, positionMarker, accuracyCircle, viewRevision = 0;
+  let locationAttempted = false, manualView = false;
   let tileErrors = 0, tileTimer, mapReady = false;
   const latLng = id => stops[id].slice(2, 4);
   const isVisible = () => !document.getElementById('route-map').hidden;
@@ -92,11 +91,6 @@
   }
 
   function updateViewControls() {
-    const location = todayLocation();
-    todayButton.disabled = !location;
-    todayButton.setAttribute('aria-label', location ? `今日地点：${location.name}` : '今日地点');
-    todayButton.setAttribute('aria-pressed', String(viewMode === 'today'));
-    locateButton.setAttribute('aria-pressed', String(viewMode === 'location'));
     document.querySelectorAll('[data-map-region]').forEach(button => {
       button.setAttribute('aria-pressed', String(viewMode === 'region' && button.dataset.mapRegion === region));
     });
@@ -119,21 +113,18 @@
     locationStatus.hidden = !message;
   }
 
-  async function locate() {
+  function locate() {
+    if (locationAttempted || !map || !isVisible()) return;
+    locationAttempted = true;
     if (!window.isSecureContext) { locationMessage('定位需使用 HTTPS，请从线上手册打开。'); return; }
     if (!navigator.geolocation) { locationMessage('此浏览器不支持定位，可查看今日行程地点。'); return; }
-    locateButton.disabled = true;
-    const revision = ++viewRevision;
+    const revision = viewRevision;
     locationMessage('正在获取位置…');
-    await show();
-    if (!map || !isVisible()) { locateButton.disabled = false; locationMessage('地图未就绪，请稍后重试。'); return; }
     const fail = error => {
-      locateButton.disabled = false;
-      locationMessage(({ 1: '未获定位权限，可在浏览器设置中允许后重试。', 2: '暂时无法定位，请检查手机定位服务后重试。', 3: '定位超时，请在信号较好处重试。' })[error.code] || '定位失败，请稍后重试。');
+      locationMessage(({ 1: '未获定位权限，保留当前地图。', 2: '暂时无法定位，保留当前地图。', 3: '定位超时，保留当前地图。' })[error.code] || '定位失败，保留当前地图。');
     };
     try {
       navigator.geolocation.getCurrentPosition(position => {
-        locateButton.disabled = false;
         const { latitude, longitude, accuracy } = position.coords;
         if (![latitude, longitude, accuracy].every(Number.isFinite)) { fail({}); return; }
         const coordinates = [latitude, longitude];
@@ -142,8 +133,8 @@
         accuracyCircle = L.circle(coordinates, { radius: accuracy, color: '#135d79', weight: 1, fillOpacity: 0.08 }).addTo(map);
         positionMarker = L.circleMarker(coordinates, { radius: 8, color: '#fff', weight: 3, fillColor: '#135d79', fillOpacity: 1 })
           .bindTooltip('我的位置', { permanent: true, direction: 'top', offset: [0, -10] }).addTo(map);
-        locationMessage(`定位精度约 ${Math.round(accuracy)} 米 · 再次点击可更新`);
-        if (revision === viewRevision && isVisible()) {
+        locationMessage(`定位精度约 ${Math.round(accuracy)} 米`);
+        if (revision === viewRevision && !manualView && isVisible()) {
           viewMode = 'location';
           map.stop();
           map.closePopup();
@@ -199,6 +190,7 @@
     if (!map || !markers[id]) return;
     viewRevision++;
     viewMode = 'stop';
+    manualView = true;
     updateViewControls();
     map.setView(latLng(id), 10, { animate: false });
     markers[id].openPopup();
@@ -273,6 +265,7 @@
     const date = mapDateKey(now);
     if (regionDate !== date) {
       regionDate = date;
+      manualView = false;
       region = defaultRegion(now);
       viewMode = todayLocation(now) ? 'today' : 'region';
       viewRevision++;
@@ -280,12 +273,13 @@
       renderRegion();
     }
     renderRegionControls();
-    if (map) { map.invalidateSize({ pan: false }); return; }
+    if (map) { map.invalidateSize({ pan: false }); locate(); return; }
     setStatus('地图加载中…');
     try {
       await loadLibrary();
       if (!isVisible()) return;
       if (!map) initializeMap();
+      locate();
     } catch {
       setStatus('地图未能加载，请检查网络后重试。', true);
     }
@@ -300,22 +294,13 @@
       region = button.dataset.mapRegion;
       regionDate = mapDateKey();
       viewMode = 'region';
+      manualView = true;
       viewRevision++;
       renderRegion();
       if (!map) show();
       if (region === 'all' && map && typeof window.notifyTouch === 'function') window.notifyTouch('已显示完整行程');
     };
   });
-  todayButton.onclick = () => {
-    if (!todayLocation()) return;
-    region = defaultRegion();
-    regionDate = mapDateKey();
-    viewMode = 'today';
-    viewRevision++;
-    renderRegion();
-    if (!map) show();
-  };
-  locateButton.onclick = locate;
   document.getElementById('routeMapStops').onclick = event => {
     const button = event.target.closest('[data-map-stop]');
     if (button) selectStop(button.dataset.mapStop);

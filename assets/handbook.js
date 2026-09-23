@@ -91,17 +91,17 @@ function attractionCard(x,index){
  const name=site[0]===place?placeName(place):site[0];
  const guide=(deepGuides[x.d]||[])[index]||[];
  return {name,english,location:placeLocations[place]||window.routeMap.locationForName(english),mapName:place?placeName(place):name,
-   intro:[site[1],guide[0]].filter(Boolean),tips:[guide[1],guide[2]].filter(Boolean),photos:[guide[3]].filter(Boolean)};
+   intro:[site[1],guide[0]].filter(Boolean),tips:guide.slice(1).filter(Boolean)};
 }
 function locationCard(day,name){
  const x=itinerary[day],matches=(attractions[x.d]||[]).map((site,index)=>({site,index})).filter(({site})=>attractionPlace(x,site[0])===name);
  const cards=matches.map(({index})=>attractionCard(x,index));
  return {name:placeName(name),english:name,location:placeLocations[name],mapName:placeName(name),
-   intro:[...new Set(cards.flatMap(card=>card.intro))],tips:cards.length?[...new Set(cards.flatMap(card=>card.tips))]:[x.summary],photos:[...new Set(cards.flatMap(card=>card.photos))]};
+   intro:[...new Set(cards.flatMap(card=>card.intro))],tips:cards.length?[...new Set(cards.flatMap(card=>card.tips))]:[x.summary]};
 }
 function placeCardMarkup(card){
  const section=(title,lines)=>lines.length?`<div class="guide-line"><b>${title}</b>${lines.map(text=>`<p>${escapeHtml(text)}</p>`).join('')}</div>`:'';
- return `${section('简介',card.intro)}${card.location?`<div class="place-card-map"><div class="interactive-map place-map" aria-label="${escapeHtml(card.mapName)}地图，可拖动和缩放" role="region"></div><div class="place-map-status"><span role="status"></span><button class="outline-btn" hidden>重试</button></div>${card.mapName!==card.name?`<p class="map-reference">地图位置：${escapeHtml(card.mapName)}</p>`:''}</div>`:'<p class="map-reference">具体地点以当天安排为准。</p>'}${section('游览提示',card.tips)}${section('拍摄与提醒',card.photos)}`;
+ return `${section('简介',card.intro)}${card.location?`<div class="place-card-map"><div class="interactive-map place-map" aria-label="${escapeHtml(card.mapName)}地图，可拖动和缩放" role="region"></div><div class="place-map-status"><span role="status"></span><button class="outline-btn" hidden>重试</button></div>${card.mapName!==card.name?`<p class="map-reference">地图位置：${escapeHtml(card.mapName)}</p>`:''}</div>`:'<p class="map-reference">具体地点以当天安排为准。</p>'}${section('游览提示',card.tips)}`;
 }
 function mountPlaceCard(root,card){
  const element=root.querySelector('.place-map');if(!element||!card.location||window.routeMap.hasPlace(element))return;

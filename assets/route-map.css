@@ -1,4 +1,4 @@
-.route-map-toolbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:10px}
+.route-map-toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:10px}
 .route-map-toolbar button[aria-pressed="true"]{background:transparent;color:var(--navy);border-color:var(--navy);box-shadow:inset 0 -2px var(--navy);font-weight:600}
 .route-map-toolbar button{min-width:0;min-height:44px;padding:8px 3px;font-size:13px;white-space:nowrap}
 .interactive-map{height:440px;height:clamp(340px,58svh,480px);width:100%;position:relative;isolation:isolate;background:#dfe7e5;border:1px solid var(--line);border-radius:3px;z-index:0}
