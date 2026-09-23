@@ -16,6 +16,61 @@ const itinerary=[
  {d:'D15',date:'10/08',title:'抵达上海',summary:'清晨抵达上海，结束澳新 12 晚 15 天行程，自行返家。',time:'预计 05:30 抵达',meal:'航司安排',hotel:'回家',places:[]}
 ];
 
+const placeNames={
+ 'Shanghai Pudong International Airport':'上海浦东国际机场',
+ 'Flinders Street Station':'弗林德斯街火车站',
+ 'St Paul’s Cathedral Melbourne':'墨尔本圣保罗大教堂',
+ 'Hosier Lane':'霍西尔巷',
+ 'Degraves Street':'德格雷夫斯街',
+ 'Royal Arcade Melbourne':'墨尔本皇家拱廊',
+ 'Twelve Apostles':'十二门徒',
+ 'Loch Ard Gorge':'洛克阿德峡谷',
+ 'Apollo Bay':'阿波罗湾',
+ 'Great Ocean Road Memorial Arch':'大洋路纪念牌坊',
+ 'Split Point Lighthouse':'斯普利特角灯塔',
+ 'Carlton Gardens':'卡尔顿花园',
+ 'State Library Victoria':'维多利亚州立图书馆',
+ 'National Gallery of Victoria':'维多利亚国家美术馆',
+ 'Fitzroy Melbourne':'菲茨罗伊街区',
+ 'Melbourne Airport':'墨尔本机场',
+ 'Green Island Queensland':'绿岛',
+ 'Great Adventures Cairns':'大冒险号游船（凯恩斯）',
+ 'Rainforestation Nature Park':'热带雨林自然公园',
+ 'Kuranda':'库兰达',
+ 'Cairns Airport':'凯恩斯机场',
+ 'Sydney Airport':'悉尼机场',
+ 'Circular Quay':'环形码头',
+ 'Sydney Opera House':'悉尼歌剧院',
+ 'Royal Botanic Garden Sydney':'悉尼皇家植物园',
+ 'University of Sydney':'悉尼大学',
+ 'Queenstown Airport':'皇后镇机场',
+ 'Lake Wakatipu':'瓦卡蒂普湖',
+ 'Queenstown Gardens':'皇后镇花园',
+ 'Eglinton Valley':'埃格林顿山谷',
+ 'Mirror Lakes New Zealand':'镜湖',
+ 'Homer Tunnel':'荷马隧道',
+ 'Milford Sound':'米佛峡湾',
+ 'Queenstown Mall':'皇后镇步行街',
+ 'Skyline Queenstown':'皇后镇天空缆车',
+ 'Glenorchy':'格林诺奇',
+ 'Arrowtown':'箭镇',
+ 'Kawarau Gorge Suspension Bridge':'卡瓦劳峡谷吊桥',
+ 'That Wanaka Tree':'瓦纳卡孤独的树',
+ 'Aoraki Mount Cook National Park':'库克山国家公园',
+ 'Lake Pukaki':'普卡基湖',
+ 'Lake Tekapo':'蒂卡波湖',
+ 'Church of the Good Shepherd':'好牧羊人教堂',
+ 'Christchurch Airport':'基督城机场',
+ 'Auckland Airport':'奥克兰机场',
+ 'Waitomo Glowworm Caves':'怀托摩萤火虫洞',
+ 'Wai-O-Tapu Thermal Wonderland':'怀奥塔普地热世界',
+ 'Redwoods Whakarewarewa Forest':'红木森林',
+ 'Government Gardens Rotorua':'罗托鲁瓦政府花园',
+ 'Polynesian Spa':'波利尼西亚温泉',
+ 'Hobbiton Movie Set':'霍比特人村',
+ 'Queen Street Auckland':'奥克兰皇后街'
+};
+
 const clothing={
  D1:{weather:'上海候机偏暖｜机舱偏冷｜墨尔本次晨约 8–18℃',formula:'短袖或薄长袖＋舒适长裤＋开衫/抓绒，防风外壳随身。',note:'按夜航舒适度穿，避免过厚单件；抵达墨尔本前在机上加中层。',carry:'外壳、眼罩、替换内衣和基础洗漱不要托运。'},
  D2:{weather:'墨尔本春季约 8–18℃｜早晚凉、日间多变',formula:'短袖/薄长袖＋开衫或抓绒＋防风防水外壳＋长裤。',note:'城市步行会升温，外层要方便穿脱；阵雨和街巷风比温度数字更影响体感。',carry:'折叠伞或轻便雨衣、墨镜、薄围巾。'},
@@ -153,4 +208,3 @@ Object.assign(deepGuides,{
   '跨时区夜航后可能疲劳，回家后补水、清淡饮食并休息，避免独自长时间驾驶或立即安排高强度工作。'
  ]]
 });
-
