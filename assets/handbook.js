@@ -1,5 +1,4 @@
 const wikiTitles={
-  "上海": "上海市",
   "墨尔本": "墨尔本",
   "凯恩斯": "凯恩斯",
   "悉尼": "悉尼",
@@ -88,7 +87,7 @@ const tripDates=itinerary.map(x=>'2026-'+x.date.replace('/','-'));
 function currentDayIndex(now=new Date()){return tripDates.indexOf(dateKey(now))}
 function addDays(key,count){const d=new Date(key+'T12:00:00');d.setDate(d.getDate()+count);return dateKey(d)}
 const relatedWiki={'大洋路纪念牌坊':'大洋路','原住民文化表演':'澳大利亚原住民','悉尼观鲸航线':'座头鲸','皇后镇镇中心':'皇后镇','Skyline Queenstown':'皇后镇','边界犬雕像':'边境牧羊犬','红木森林':'华卡雷瓦雷瓦地区'};
-function wikiLink(name,inline=false){const title=wikiTitles[name];const url=title?'https://zh.wikipedia.org/zh-cn/'+encodeURIComponent(title):'https://zh.wikipedia.org/w/index.php?'+new URLSearchParams({search:name+' '+(name==='镜湖'?'新西兰':''),title:'Special:Search'});const label=inline?name:title?(relatedWiki[name]?'相关百科：'+relatedWiki[name]:'中文百科'):'中文百科搜索';return `<a class="${inline?'city-link':'wiki-link'}" href="${escapeHtml(url)}" target="_blank" rel="noopener"${inline?` aria-label="${escapeHtml(name)} · 中文百科"`:''}><span>${escapeHtml(label)}</span><span class="link-arrow" aria-hidden="true">↗</span></a>`}
+function wikiLink(name,inline=false){if(name==='上海')return escapeHtml(name);const title=wikiTitles[name];const url=title?'https://zh.wikipedia.org/zh-cn/'+encodeURIComponent(title):'https://zh.wikipedia.org/w/index.php?'+new URLSearchParams({search:name+' '+(name==='镜湖'?'新西兰':''),title:'Special:Search'});const label=inline?name:title?(relatedWiki[name]?'相关百科：'+relatedWiki[name]:'中文百科'):'中文百科搜索';return `<a class="${inline?'city-link':'wiki-link'}" href="${escapeHtml(url)}" target="_blank" rel="noopener"${inline?` aria-label="${escapeHtml(name)} · 中文百科"`:''}><span>${escapeHtml(label)}</span><span class="link-arrow" aria-hidden="true">↗</span></a>`}
 function flightLinks(text){return escapeHtml(text).replace(/\b(MU|JQ|VA)(\d{2,4})\b/g,(flight,prefix,number)=>`<a class="flight-link" href="https://www.flightaware.com/live/flight/${{MU:'CES',JQ:'JST',VA:'VOZ'}[prefix]}${number}" target="_blank" rel="noopener noreferrer" aria-label="${flight} 航班动态（FlightAware）"><span>${flight}</span><span class="link-arrow" aria-hidden="true">↗</span></a>`)}
 
 function wearMarkup(x){const w=clothing[x.d];return w?`<section class="wear-guide"><div class="wear-head"><h4>穿衣建议</h4><span class="wear-weather">气候参考 · ${w.weather}</span></div><div class="wear-formula">${w.formula}</div><div class="wear-note">${w.note}</div><div class="wear-carry"><b>随身：</b>${w.carry}</div></section>`:''}
