@@ -109,12 +109,6 @@ def render_table(page, table, number, audit):
         return ''.join(rows)
     wide=number in [2,4,15]
     rows=[]
-    if number==2:
-        header=['日期','航班号','起飞地点','降落地点','预计起飞时间','预计降落时间']
-        first=[grid[0,col] for col in range(column_count) if (0,col) in grid]
-        if len(first)!=6:
-            raise ValueError('Flight table must have six columns')
-        rows.append('<thead><tr>'+''.join(f'<th colspan="{cell["colspan"]}" scope="col">{label}</th>' for cell,label in zip(first,header))+'</tr></thead>')
     for row in range(len(ys)-1):
         values=[]
         for col in range(column_count):
@@ -263,6 +257,48 @@ def validate_public_content(blocks):
                     raise ValueError('Unapproved telephone number in notice content')
 
 
+def merge_flight_tables(blocks):
+    headers=['日期','航班号','起飞地点','降落地点','预计起飞时间','预计降落时间']
+    for index,block in enumerate(blocks):
+        tables=block.xpath('./table')
+        if not tables:
+            continue
+        rows=tables[0].xpath('./tr')
+        header=next((row for row in rows if [normalized(cell.text_content()) for cell in row]==headers),None)
+        if header is None:
+            continue
+        if len(rows)!=2 or len(rows[0])!=1 or index+1>=len(blocks):
+            raise ValueError('Review flight table introduction and header')
+        following=blocks[index+1].xpath('./table')
+        if len(following)!=1:
+            raise ValueError('Missing continued flight table')
+        table=following[0]
+        data_rows=table.xpath('./tr')
+        if not data_rows or not re.fullmatch(r'\d{4}\.\d{2}\.\d{2}',data_rows[0][0].text_content()):
+            raise ValueError('Unexpected continued flight table content')
+        intro=dom.Element('div',{'class':'notice-prose'})
+        for paragraph in list(rows[0][0]):
+            intro.append(paragraph)
+        thead=dom.Element('thead')
+        for cell in header:
+            cell.tag='th';cell.attrib.clear();cell.set('scope','col')
+        thead.append(header)
+        tbody=dom.Element('tbody')
+        for row in data_rows:
+            if len(row) not in (1,6) or any(cell.get('rowspan','1')!='1' for cell in row):
+                raise ValueError('Flight table must use six consistent columns')
+            for cell in row:
+                cell.attrib.clear()
+                if len(row)==1:
+                    cell.set('colspan','6')
+            tbody.append(row)
+        table.append(thead);table.append(tbody)
+        blocks[index]=intro
+        blocks[index+1].set('aria-label','航班信息表')
+        return
+    raise ValueError('Flight table header not found')
+
+
 def organize(pages):
     roots=[dom.fromstring(page) for page in pages]
     expected=Counter(normalized(''.join(root.text_content() for root in roots)))
@@ -293,6 +329,7 @@ def organize(pages):
             blocks.append(el)
     if removed!=1:
         raise ValueError('Expected exactly one excluded paragraph')
+    merge_flight_tables(blocks)
     sanitize_hotels(blocks,expected)
     validate_public_content(blocks)
     sections=[]

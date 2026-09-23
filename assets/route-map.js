@@ -176,12 +176,12 @@
       tileErrors = 0;
       clearTimeout(tileTimer);
       setStatus('地图加载中…');
-      tileTimer = setTimeout(() => setStatus('底图加载较慢，可稍后重试。', true), 15000);
+      tileTimer = setTimeout(() => setStatus('地图加载较慢，请稍后重试。', true), 15000);
     });
     tiles.on('tileerror', () => { tileErrors++; });
     tiles.on('load', () => {
       clearTimeout(tileTimer);
-      setStatus(tileErrors ? '部分底图未能加载，行程标记仍可查看。' : '', tileErrors > 0);
+      setStatus(tileErrors ? '地图未完全加载，可重试。' : '', tileErrors > 0);
     });
     overlays = L.layerGroup().addTo(map);
     renderRegion();
@@ -264,13 +264,13 @@
         errors = 0;
         clearTimeout(placeTimer);
         report('地图加载中…');
-        placeTimer = setTimeout(() => report('底图加载较慢，可稍后重试。', true), 15000);
+        placeTimer = setTimeout(() => report('地图加载较慢，请稍后重试。', true), 15000);
       });
       layer.on('tileerror', () => { errors++; });
       layer.on('load', () => {
         if (!current()) return;
         clearTimeout(placeTimer);
-        report(errors ? '部分底图未能加载，地点标记仍可查看。' : '', errors > 0);
+        report(errors ? '地图未完全加载，可重试。' : '', errors > 0);
       });
       layer.addTo(placeMap);
     } catch {
