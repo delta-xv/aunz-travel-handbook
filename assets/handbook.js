@@ -61,22 +61,7 @@ const wikiTitles={
   "奥克兰皇后街": null,
   "奥克兰机场": "奧克蘭機場"
 };
-const events=[
- {at:'2026-09-24T17:00:00+08:00',title:'浦东机场集合',detail:'17:00 · 上海浦东国际机场 T1 航站楼 14号门 L岛'},
- {at:'2026-09-24T20:30:00+08:00',title:'飞往墨尔本',detail:'MU737 · 20:30 起飞；17:00 于 T1 航站楼 14号门 L岛集合'},
- {at:'2026-09-25T09:00:00+10:00',title:'抵达墨尔本',detail:'开始澳大利亚段行程'},
- {at:'2026-09-27T18:55:00+10:00',title:'飞往凯恩斯',detail:'JQ946 · 18:55 起飞'},
- {at:'2026-09-28T10:30:00+10:00',title:'绿岛大堡礁',detail:'大冒险号出海 · 约 10:30'},
- {at:'2026-09-29T15:35:00+10:00',title:'飞往悉尼',detail:'JQ955 · 15:35 起飞'},
- {at:'2026-09-30T09:30:00+10:00',title:'悉尼观鲸',detail:'库克船长游轮 · 约 09:30'},
- {at:'2026-10-01T10:50:00+10:00',title:'飞往皇后镇',detail:'JQ223 · 10:50 起飞'},
- {at:'2026-10-02T07:00:00+13:00',title:'米佛峡湾',detail:'峡湾国家公园一日游'},
- {at:'2026-10-04T08:00:00+13:00',title:'前往库克山',detail:'箭镇 · 瓦纳卡 · Aoraki'},
- {at:'2026-10-05T20:30:00+13:00',title:'飞往奥克兰',detail:'基督城机场 · JQ242'},
- {at:'2026-10-06T08:00:00+13:00',title:'北岛环线',detail:'怀托摩 · 怀奥塔普 · 罗托鲁瓦'},
- {at:'2026-10-07T22:00:00+13:00',title:'返程上海',detail:'奥克兰机场 · MU780'},
- {at:'2026-10-08T05:30:00+08:00',title:'抵达上海',detail:'旅程圆满结束'}
-];
+const departureMeeting='上海浦东国际机场 T1 航站楼 14号门 L岛';
 
 const logbookIcons={"compass":"<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 1v4m0 14v4M1 12h4m14 0h4M8 16l2-6 6-2-2 6-6 2Z\"/><path d=\"m10 10 4 4\"/>","calendar":"<rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"1\"/><path d=\"M7 2v6m10-6v6M3 10h18\"/>","list":"<path d=\"M8 5h13M8 12h13M8 19h13\"/><circle cx=\"3\" cy=\"5\" r=\".6\"/><circle cx=\"3\" cy=\"12\" r=\".6\"/><circle cx=\"3\" cy=\"19\" r=\".6\"/>","map":"<path d=\"m3 5 6-3 6 3 6-3v17l-6 3-6-3-6 3V5Zm6-3v17m6-14v17\"/>","ticket":"<path d=\"M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Zm12 0v3m0 3v2m0 3v3\"/>","bulb":"<path d=\"M8 18h8m-7 3h6M8 15c0-3-3-3-3-7a7 7 0 0 1 14 0c0 4-3 4-3 7v3H8v-3Z\"/>","pin":"<path d=\"M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"2.5\"/>","share":"<circle cx=\"6\" cy=\"12\" r=\"3\"/><circle cx=\"18\" cy=\"5\" r=\"3\"/><circle cx=\"18\" cy=\"19\" r=\"3\"/><path d=\"m9 10 6-4M9 14l6 4\"/>","arrow":"<path d=\"m9 5 7 7-7 7\"/>","back":"<path d=\"m15 5-7 7 7 7\"/>","plane":"<path d=\"m2 14 8-4V3c0-2 4-2 4 0v7l8 4v3l-8-2v4l3 2H7l3-2v-4l-8 2v-3Z\"/>","bed":"<path d=\"M3 4v17m18-11v11M3 17h18M3 9h18v8M7 9V6h10v3\"/>","meal":"<path d=\"M5 2v7m4-7v7M3 2v5c0 4 8 4 8 0V2M7 10v12M19 2c-4 3-4 10 0 10V2Zm0 10v10\"/>","document":"<path d=\"M5 2h10l4 4v16H5V2Zm10 0v5h4M8 11h8m-8 4h8m-8 4h5\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 6v6l4 2\"/>","refresh":"<path d=\"M20 9a8 8 0 0 0-14-4L3 8m0-6v6h6M4 15a8 8 0 0 0 14 4l3-3m0 6v-6h-6\"/>","external":"<path d=\"M14 3h7v7M21 3l-11 11M10 3H3v18h18v-7\"/>"};
 function logbookIcon(name){return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${logbookIcons[name]||''}</svg>`}
@@ -91,33 +76,47 @@ function wikiLink(name,inline=false,displayName=name){if(name==='上海')return 
 function flightLinks(text){return escapeHtml(text).replace(/\b(MU|JQ|VA)(\d{2,4})\b/g,(flight,prefix,number)=>`<a class="flight-link" href="https://www.flightaware.com/live/flight/${{MU:'CES',JQ:'JST',VA:'VOZ'}[prefix]}${number}" target="_blank" rel="noopener noreferrer" aria-label="${flight} 航班动态（FlightAware）"><span>${flight}</span><span class="link-arrow" aria-hidden="true">↗</span></a>`)}
 
 function wearMarkup(x,heading=true){const w=clothing[x.d];return w?`<section class="wear-guide"><div class="wear-head">${heading?'<h4>穿衣建议</h4>':''}<span class="wear-weather">气候参考 · ${w.weather}</span></div><div class="wear-formula">${w.formula}</div><div class="wear-note">${w.note}</div><div class="wear-carry"><b>随身：</b>${w.carry}</div></section>`:''}
-function detailMarkup(x){const sites=attractions[x.d]||[];return `<div class="story"><p>${flightLinks(x.summary)}</p><div class="detail-grid"><div><b>交通</b>${flightLinks(x.time)}</div><div><b>餐食</b>${x.meal}</div><div><b>住宿</b>${x.hotel}</div><div><b>安排</b>${['D4','D10'].includes(x.d)?'自由活动 + 集合':'跟团安排'}</div></div>${wearMarkup(x)}${sites.length?`<div class="attractions-title">景点介绍</div><div class="attraction-list">${sites.map((a,j)=>{const guide=(deepGuides[x.d]||[])[j]||[];return `<details class="attraction"><summary><span class="attraction-no">${String(j+1).padStart(2,'0')}</span>${escapeHtml(a[0])}</summary><div class="deep-guide">${a[1]||guide[0]?'':wikiLink(a[0])}<div class="guide-line"><b>简介</b><span>${a[1]}</span><span>${guide[0]||''}</span></div><div class="guide-line"><b>游览提示</b><span>${guide[1]||''}</span><span>${guide[2]||''}</span></div>${guide[3]?`<details class="mini-guide"><summary>拍摄与提醒</summary><p>${guide[3]}</p></details>`:''}</div></details>`}).join('')}</div>`:''}${placeButtons(x)}${x.warn?`<p class="warning">${x.warn}</p>`:''}</div>`}
+const attractionPlaceAliases={
+ '圣保罗大教堂':'St Paul’s Cathedral Melbourne','皇家拱廊':'Royal Arcade Melbourne','洛克阿德峡谷 / 沉船湾':'Loch Ard Gorge','Split Point 灯塔':'Split Point Lighthouse','Fitzroy 街区':'Fitzroy Melbourne',
+ '大堡礁海域':'Great Adventures Cairns','雨林自然公园':'Rainforestation Nature Park','原住民文化表演':'Rainforestation Nature Park','库兰达野生动物园':'Rainforestation Nature Park',
+ '悉尼观鲸航线':'Circular Quay','皇家植物园':'Royal Botanic Garden Sydney','皇后镇镇中心':'Queenstown Mall','卡瓦劳吊桥':'Kawarau Gorge Suspension Bridge','Aoraki / 库克山国家公园':'Aoraki Mount Cook National Park','边界犬雕像':'Church of the Good Shepherd'
+};
+function attractionPlace(x,name){return x.places.find(place=>placeName(place)===name||place===name||place===attractionPlaceAliases[name])}
+function detailMarkup(x){
+ const sites=attractions[x.d]||[],index=Number(x.d.slice(1))-1;
+ const usedPlaces=new Set(sites.map(a=>attractionPlace(x,a[0])).filter(Boolean));
+ const otherPlaces=dayPlaces(index).filter(name=>!usedPlaces.has(name));
+ return `<div class="story"><section class="day-visit" id="day-visit-${index+1}" tabindex="-1"><h3>${sites.length?'游览安排':'当天安排'}</h3><p>${flightLinks(x.summary)}</p>${sites.length?`<div class="attraction-list">${sites.map((a,j)=>{
+ const guide=(deepGuides[x.d]||[])[j]||[],place=attractionPlace(x,a[0]);
+ return `<details class="attraction"><summary><span class="attraction-no">${String(j+1).padStart(2,'0')}</span>${escapeHtml(a[0])}</summary><div class="deep-guide">${a[1]||guide[0]?'':wikiLink(a[0])}<div class="guide-line"><b>简介</b><span>${a[1]}</span><span>${guide[0]||''}</span></div><div class="guide-line"><b>游览提示</b><span>${guide[1]||''}</span><span>${guide[2]||''}</span></div>${guide[3]?`<details class="mini-guide"><summary>拍摄与提醒</summary><p>${guide[3]}</p></details>`:''}${place?placeButton(x,place):''}</div></details>`
+ }).join('')}</div>`:''}${x.warn?`<p class="warning">${x.warn}</p>`:''}</section><details class="day-practical"><summary>当日信息</summary><div class="detail-grid"><div><b>交通</b>${flightLinks(x.time)}</div><div><b>餐食</b>${x.meal}</div><div><b>住宿</b>${x.hotel}</div><div><b>安排</b>${['D4','D10'].includes(x.d)?'自由活动 + 集合':'跟团安排'}</div></div>${otherPlaces.length?`<div class="places">${otherPlaces.map(name=>placeButton(x,name)).join('')}</div>`:''}</details></div>`;
+}
 itinerary.forEach((x,i)=>{const el=document.createElement('article');el.id='day-'+(i+1);el.className='day card';el.innerHTML=`<button class="day-head" id="day-heading-${i+1}" aria-expanded="false" aria-controls="day-body-${i+1}"><span class="day-index"><b>${x.d}</b><small>${x.date}</small></span><span class="day-copy"><span class="day-title">${x.title}</span><span class="day-caption">${x.time}</span></span>${logbookIcon('arrow')}</button><div class="day-body" id="day-body-${i+1}" role="region" aria-labelledby="day-heading-${i+1}" hidden>${detailMarkup(x)}<div class="inline-day-actions"><button class="outline-btn" data-collapse-day="${i}">收起</button></div></div>`;el.querySelector('button').onclick=()=>toggleInlineDay(i);document.getElementById('timeline').appendChild(el)});
 const sheet=document.getElementById('actionSheet');
-let sheetOpener=null,sheetScrollY=0,activeView='',renderedSheet='',expandedDay=null;
+let sheetOpener=null,sheetScrollY=0,activeView='',renderedSheet='',expandedDay=null,visitPosition=false;
 const viewIds=['today','itinerary','route-map'],viewScroll={};
 if('scrollRestoration' in history)history.scrollRestoration='manual';
 function isOpen(el){return el.hasAttribute('open')}
 function focusQuietly(el){try{el?.focus({preventScroll:true})}catch{el?.focus()}}
 function openModal(el){if(isOpen(el))return;if(typeof el.showModal==='function')el.showModal();else{el.setAttribute('open','');el.classList.add('fallback-dialog');el.setAttribute('role','dialog');el.setAttribute('aria-modal','true')}}
 function closeModal(el){if(!isOpen(el))return;if(el===sheet)window.routeMap.clearPlace();if(typeof el.close==='function'&&!el.classList.contains('fallback-dialog'))el.close();else el.removeAttribute('open')}
-function routeState(){const parts=location.hash.slice(1).split('/'),match=/^day-(\d+)$/.exec(parts[1]||'');const day=match&&Number(match[1])>=1&&Number(match[1])<=15?Number(match[1])-1:null;return{view:day!==null?'itinerary':viewIds.includes(parts[0])?parts[0]:'today',day}}
+function routeState(){const parts=location.hash.slice(1).split('/'),match=/^day-(\d+)$/.exec(parts[1]||'');const day=match&&Number(match[1])>=1&&Number(match[1])<=15?Number(match[1])-1:null;return{view:day!==null?'itinerary':viewIds.includes(parts[0])?parts[0]:'today',day,visit:day!==null&&parts[2]==='visit'}}
 function setExpandedDay(index){expandedDay=index;document.querySelectorAll('.day').forEach((row,i)=>{const open=i===index;row.classList.toggle('expanded',open);row.querySelector('.day-head').setAttribute('aria-expanded',String(open));row.querySelector('.day-body').hidden=!open})}
-function scrollToDay(index){if(activeView!=='itinerary'||isOpen(sheet))return;const row=document.getElementById('day-'+(index+1));if(!row||row.hidden)return;window.scrollTo({top:Math.max(0,scrollY+row.getBoundingClientRect().top-12),behavior:'auto'})}
+function scrollToDay(index,visit=false){if(activeView!=='itinerary'||isOpen(sheet))return;const row=document.getElementById((visit?'day-visit-':'day-')+(index+1));if(!row||row.hidden)return;window.scrollTo({top:Math.max(0,scrollY+row.getBoundingClientRect().top-12),behavior:'auto'})}
 function scrollToCurrentDay(){if(activeView!=='itinerary'||isOpen(sheet)||routeState().day!==null)return;const today=currentDayIndex();scrollToDay(today>=0?today:dateKey(new Date())<tripDates[0]?0:itinerary.length-1)}
-function syncNavigation(){const route=routeState(),sheetState=history.state?.app==='aunz-touch'&&['map','copy'].includes(history.state.sheet?.type)?history.state.sheet:null;const changed=activeView!==route.view,changedDay=expandedDay!==route.day;let returnFocus=null;
+function syncNavigation(){const route=routeState(),sheetState=history.state?.app==='aunz-touch'&&['map','copy'].includes(history.state.sheet?.type)?history.state.sheet:null;const changed=activeView!==route.view,changedDay=expandedDay!==route.day,changedPosition=visitPosition!==route.visit;visitPosition=route.visit;let returnFocus=null;
   if(changed){if(activeView)viewScroll[activeView]=scrollY;activeView=route.view;document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==activeView);document.querySelectorAll('[data-nav]').forEach(a=>{const active=a.hash==='#'+activeView;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')})}
   if(activeView==='route-map')window.routeMap.show();
   setExpandedDay(route.view==='itinerary'?route.day:null);
   if(sheetState){const key=JSON.stringify(sheetState);if(key!==renderedSheet){renderSheet(sheetState);renderedSheet=key}const wasOpen=isOpen(sheet);openModal(sheet);if(!wasOpen)focusQuietly(document.getElementById('closeSheet'))}else if(isOpen(sheet)){closeModal(sheet);renderedSheet='';returnFocus=sheetOpener}
   document.body.classList.toggle('dialog-open',isOpen(sheet));document.querySelector('.app').inert=isOpen(sheet);document.querySelector('.mobile-nav').inert=isOpen(sheet);document.getElementById('modalBackdrop').hidden=!(isOpen(sheet)&&sheet.classList.contains('fallback-dialog'));
   if(returnFocus)requestAnimationFrame(()=>{window.scrollTo({top:sheetScrollY,behavior:'instant'});focusQuietly(returnFocus)});
-  if(!sheetState&&(changed||changedDay)){requestAnimationFrame(()=>{if(activeView==='itinerary'){if(route.day!==null){scrollToDay(route.day)}else if(changed)scrollToCurrentDay()}else if(changed)window.scrollTo(0,viewScroll[activeView]||0)})}
+  if(!sheetState&&(changed||changedDay||changedPosition)){requestAnimationFrame(()=>{if(activeView==='itinerary'){if(route.day!==null){scrollToDay(route.day,route.visit)}else if(changed)scrollToCurrentDay()}else if(changed)window.scrollTo(0,viewScroll[activeView]||0)})}
   document.title=(route.day!==null?itinerary[route.day].d+' '+itinerary[route.day].title:document.querySelector(`[data-nav][href="#${activeView}"] span`).textContent)+' · 澳新旅行手册';
 }
 function toggleInlineDay(index){const next=expandedDay===index?null:index;history.replaceState(null,'','#itinerary'+(next===null?'':'/day-'+(next+1)));syncNavigation();requestAnimationFrame(()=>scrollToDay(index))}
 function collapseInlineDay(index){history.replaceState(null,'','#itinerary');syncNavigation();requestAnimationFrame(()=>{scrollToDay(index);focusQuietly(document.querySelector('#day-'+(index+1)+' .day-head'))})}
-function openDay(index){if(index<0||index>=itinerary.length)return;history.pushState(null,'','#itinerary/day-'+(index+1));syncNavigation()}
+function openDay(index,visit=false){if(index<0||index>=itinerary.length)return;history.pushState(null,'','#itinerary/day-'+(index+1)+(visit?'/visit':''));syncNavigation()}
 function openSheet(data,opener=document.activeElement){if(!isOpen(sheet)){sheetOpener=opener;sheetScrollY=scrollY}history.pushState({app:'aunz-touch',kind:'sheet',sheet:data},'',location.href);syncNavigation()}
 function closeSheet(){if(history.state?.app==='aunz-touch'&&history.state.sheet)history.back();else{closeModal(sheet);syncNavigation()}}
 function goView(id){if(activeView===id){if(id==='itinerary'){history.replaceState(null,'','#itinerary');syncNavigation();scrollToCurrentDay()}else window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});return}history.pushState(null,'','#'+id);syncNavigation()}
@@ -140,7 +139,8 @@ const dayCities=['shanghai','melbourne','coast','melbourne','cairns','cairns','s
 function dayPlaces(index){const places=itinerary[index].places;return places.length?places:['Shanghai Pudong International Airport']}
 function placeName(name){return placeNames[name]||name}
 function placeCopyName(name,language='zh'){const country=({zh:{cn:'中国',au:'澳大利亚',nz:'新西兰'},en:{cn:'China',au:'Australia',nz:'New Zealand'}}[language])[placeLocations[name]?.country];return (language==='en'?name:placeName(name))+(country?(language==='en'?', ':'，')+country:'')}
-function placeButtons(x,heading=true){const index=Number(x.d.slice(1))-1;return `${heading?'<div class="places-label">地点与路线</div>':''}<div class="places">${dayPlaces(index).map((name,j)=>`<button class="place place-button" data-place-day="${index}" data-place-index="${j}" aria-haspopup="dialog"><span class="place-button-label"><span>⌖ ${escapeHtml(placeName(name))}</span><small lang="en">${escapeHtml(name)}</small></span><span aria-hidden="true">›</span></button>`).join('')}</div>`}
+function placeButton(x,name){const index=Number(x.d.slice(1))-1,j=dayPlaces(index).indexOf(name);return `<button class="place place-button" data-place-day="${index}" data-place-index="${j}" aria-haspopup="dialog" aria-label="查看${escapeHtml(placeName(name))}地图与复制名称"><span class="place-button-label"><span>⌖ ${escapeHtml(placeName(name))}</span><small lang="en">${escapeHtml(name)}</small></span><span aria-hidden="true">›</span></button>`}
+function placeButtons(x,heading=true){const index=Number(x.d.slice(1))-1;return `${heading?'<div class="places-label">地点与路线</div>':''}<div class="places">${dayPlaces(index).map(name=>placeButton(x,name)).join('')}</div>`}
 function notifyTouch(message){if(isOpen(sheet))document.getElementById('sheetStatus').textContent=message;const toast=document.getElementById('touchToast');toast.textContent=message;toast.classList.add('visible');clearTimeout(notifyTouch.timer);notifyTouch.timer=setTimeout(()=>toast.classList.remove('visible'),3000)}
 async function copyText(text,field){if(window.isSecureContext&&navigator.clipboard?.writeText){try{await navigator.clipboard.writeText(text);notifyTouch('已复制');return true}catch{}}if(field){field.focus();field.select();field.setSelectionRange(0,field.value.length);try{if(document.execCommand('copy')){notifyTouch('已复制');return true}}catch{}document.getElementById('sheetStatus').textContent='请长按文字，选择“复制”。';return false}openSheet({type:'copy',text});return false}
 function renderSheet(data){window.routeMap.clearPlace();const title=document.getElementById('sheetTitle'),content=document.getElementById('sheetContent');content.scrollTop=0;document.getElementById('sheetStatus').textContent='';
@@ -152,16 +152,34 @@ function renderSheet(data){window.routeMap.clearPlace();const title=document.get
   const copy=document.getElementById('copySheet');if(copy)copy.onclick=()=>{const field=document.getElementById('copyField');copyText(field.value,field)};
 }
 document.addEventListener('click',e=>{const button=e.target.closest('[data-place-day]');if(button)openSheet({type:'map',day:Number(button.dataset.placeDay),place:Number(button.dataset.placeIndex)},button)});
-const dateRail=document.getElementById('dateRail');let selectedDay='auto';
-dateRail.innerHTML='<button class="date-chip" data-day="auto" aria-pressed="true"><span>自动</span><strong>今天</strong></button>'+itinerary.map((x,i)=>`<button class="date-chip" data-day="${i}" aria-pressed="false" aria-label="${x.date} ${x.d} ${escapeHtml(x.title)}"><span>${x.date}</span><strong>${x.d}</strong></button>`).join('');
-dateRail.addEventListener('click',e=>{const button=e.target.closest('[data-day]');if(!button)return;selectedDay=button.dataset.day;renderToday();button.scrollIntoView({block:'nearest',inline:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
-function updateDateRail(){dateRail.querySelectorAll('button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.day===selectedDay));b.classList.toggle('is-today',Number(b.dataset.day)===currentDayIndex()&&b.dataset.day!=='auto')})}
+let selectedDay='auto';
+document.getElementById('previousToday').onclick=()=>{if(displayedDay>0){selectedDay=String(displayedDay-1);renderToday()}};
+document.getElementById('nextToday').onclick=()=>{if(displayedDay<itinerary.length-1){selectedDay=String(displayedDay+1);renderToday()}};
+document.getElementById('resetToday').onclick=()=>{selectedDay='auto';renderToday()};
 function weatherDetailURL(city){return 'https://www.windy.com/'+cities[city][1].toFixed(4)+'/'+cities[city][2].toFixed(4)}
 
 let displayedDay=0,lastSystemDate='',weatherGeneration=0,lastWeatherRefresh=0;
-function renderToday(forceWeather=false){updateDateRail();const now=new Date(),key=dateKey(now),idx=currentDayIndex(now),manual=selectedDay!=='auto';displayedDay=manual?Number(selectedDay):idx>=0?idx:key<tripDates[0]?0:14;const x=itinerary[displayedDay];document.getElementById('todayHeading').textContent=new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(now)+'';document.getElementById('todayTitle').textContent=x.title;document.getElementById('todaySummary').textContent=x.summary;document.getElementById('todayFacts').innerHTML=`<div><b>${logbookIcon('plane')}交通</b><span>${flightLinks(x.time)}</span></div><div><b>${logbookIcon('bed')}住宿</b><span>${x.hotel}</span></div><div><b>${logbookIcon('meal')}餐食</b><span>${x.meal}</span></div>`;document.getElementById('todayDetail').textContent='查看行程';document.getElementById('todayPlacesContent').innerHTML=placeButtons(x,false);document.getElementById('todayWear').innerHTML=wearMarkup(x,false);document.querySelectorAll('.day').forEach((d,i)=>d.classList.toggle('current',i===idx));updateNextEvent();loadWeather(forceWeather);}
-function updateNextEvent(){const next=events.find(e=>new Date(e.at)>new Date());const el=document.getElementById('nextEvent');if(!next){el.innerHTML='<summary>行程已结束</summary><p>可继续查看旅行资料。</p>';return}const delta=Math.max(0,new Date(next.at)-new Date()),days=Math.floor(delta/86400000),hours=Math.floor(delta%86400000/3600000),mins=Math.floor(delta%3600000/60000);el.innerHTML=`<summary>${logbookIcon('clock')}<span>下一安排：${escapeHtml(next.title)}</span>${logbookIcon('arrow')}</summary><p>还有 ${days} 天 ${hours} 小时 ${mins} 分钟<br>${flightLinks(next.detail)}</p>`;}
-document.getElementById('todayDetail').onclick=e=>openDay(displayedDay,e.currentTarget);
+function renderToday(forceWeather=false){
+ const now=new Date(),key=dateKey(now),idx=currentDayIndex(now),manual=selectedDay!=='auto';
+ displayedDay=manual?Number(selectedDay):idx>=0?idx:key<tripDates[0]?0:itinerary.length-1;
+ const x=itinerary[displayedDay],date=manual?new Date(tripDates[displayedDay]+'T12:00:00'):now;
+ document.getElementById('todayHeading').textContent=new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(date);
+ document.getElementById('previousToday').disabled=displayedDay===0;
+ document.getElementById('nextToday').disabled=displayedDay===itinerary.length-1;
+ document.getElementById('resetToday').textContent=manual?'回到今天':'今天';
+ document.getElementById('resetToday').disabled=!manual;
+ const note=document.getElementById('todayDateNote');note.hidden=manual||idx>=0;note.textContent=key<tripDates[0]?'9月24日出发':'行程已结束';
+ document.getElementById('todayTitle').textContent=x.title;
+ document.getElementById('todayEssentials').innerHTML=`<div><b>${logbookIcon('clock')}交通</b><span>${flightLinks(x.time)}</span></div>${displayedDay===0?`<div><b>${logbookIcon('pin')}集合</b><span>${departureMeeting}</span></div>`:''}`;
+ const warning=document.getElementById('todayWarning');warning.hidden=!x.warn;warning.textContent=x.warn||'';
+ document.getElementById('todayFacts').innerHTML=`<div><b>${logbookIcon('bed')}住宿</b><span>${x.hotel}</span></div><div><b>${logbookIcon('meal')}餐食</b><span>${x.meal}</span></div>`;
+ document.getElementById('todayDetail').textContent=(attractions[x.d]||[]).length?'景点与游览安排':'完整安排';
+ document.getElementById('todayPlacesContent').innerHTML=placeButtons(x,false);
+ document.getElementById('todayWear').innerHTML=wearMarkup(x,false);
+ document.querySelectorAll('.day').forEach((d,i)=>d.classList.toggle('current',i===idx));
+ loadWeather(forceWeather);
+}
+document.getElementById('todayDetail').onclick=()=>openDay(displayedDay,true);
 function weatherTargets(){const start=selectedDay==='auto'?dateKey(new Date()):tripDates[displayedDay];return Array.from({length:4},(_,i)=>{const date=addDays(start,i),idx=tripDates.indexOf(date);return{date,city:idx>=0?dayCities[idx]:'shanghai'}})}
 function weatherName(code){if(code===0)return '晴';if([1,2].includes(code))return '晴间多云';if(code===3)return '阴';if([45,48].includes(code))return '雾';if([51,53,55,56,57].includes(code))return '毛毛雨';if([61,63,65,66,67].includes(code))return '雨';if([71,73,75,77,85,86].includes(code))return '雪';if([80,81,82].includes(code))return '阵雨';if([95,96,99].includes(code))return '雷雨';return '暂无天气现象'}
 function validWeather(data){return data&&Array.isArray(data.daily?.time)&&Array.isArray(data.daily?.temperature_2m_max)&&Array.isArray(data.daily?.temperature_2m_min)}
@@ -170,13 +188,13 @@ async function fetchWeather(city,force){const cached=weatherCache(city);if(!forc
 function weatherContent(target,result){const data=result.data,daily=data?.daily,index=daily?.time.indexOf(target.date)??-1;const has=index>=0&&Number.isFinite(daily.temperature_2m_min[index])&&Number.isFinite(daily.temperature_2m_max[index]);const city=cities[target.city],today=dateKey(new Date()),isToday=target.date===today;const link=wikiLink(city[0],true,weatherCityLabel(target.city));let body='';if(has){const min=Math.round(daily.temperature_2m_min[index]),max=Math.round(daily.temperature_2m_max[index]),rain=daily.precipitation_probability_max?.[index];const current=data.current;const currentDate=current?.time?.slice(0,10);if(isToday&&currentDate===target.date&&Number.isFinite(current?.temperature_2m))body+=`<div class="weather-current">${result.stale?'上次天气':'现在'} ${Math.round(current.temperature_2m)}° · ${weatherName(current.weather_code)}<div class="weather-meta">当地 ${escapeHtml(current.time.slice(11,16))}</div></div>`;body+=`<div class="weather-temp">${min}° / ${max}°</div><div class="weather-meta">${weatherName(daily.weather_code?.[index])}<br>降雨概率 ${Number.isFinite(rain)?rain+'%':'暂无'}</div>`;}else body=`<p class="weather-meta">${result.unavailable?'暂未获取天气，请联网重试。':'暂无该日期预报，临近时再看。'}</p>`;return `<div class="weather-date">${target.date.slice(5).replace('-','/')} · ${isToday?'今天':target.date===addDays(today,1)?'明天':new Intl.DateTimeFormat('zh-CN',{weekday:'short'}).format(new Date(target.date+'T12:00:00'))}</div><h3>${link}</h3>${body}${has&&result.stale?'<span class="weather-status">更新失败 · 上次预报</span>':''}<a class="weather-detail-link" href="${weatherDetailURL(target.city)}" target="_blank" rel="noopener">详细天气 · Windy ↗</a>`}
 async function loadWeather(force=false){const generation=++weatherGeneration,targets=weatherTargets();lastWeatherRefresh=Date.now();const grid=document.getElementById('weatherGrid');grid.innerHTML=targets.map((t,i)=>`<article class="card weather-card" id="weather-${i}"><div class="weather-date">${t.date.slice(5)}</div><h3>${escapeHtml(weatherCityLabel(t.city))}</h3><p class="weather-meta">天气加载中…</p></article>`).join('');const button=document.getElementById('refreshWeather');button.disabled=true;await Promise.all([...new Set(targets.map(t=>t.city))].map(async city=>{const result=await fetchWeather(city,force);if(generation!==weatherGeneration)return;targets.forEach((target,i)=>{if(target.city===city)document.getElementById('weather-'+i).innerHTML=weatherContent(target,result)})}));if(generation===weatherGeneration)button.disabled=false}
 document.getElementById('refreshWeather').onclick=()=>loadWeather(true);
-function checkDate(forceWeather=false){const key=dateKey(new Date());if(key!==lastSystemDate){lastSystemDate=key;renderToday(forceWeather);requestAnimationFrame(scrollToCurrentDay)}else{updateNextEvent();if(forceWeather||Date.now()-lastWeatherRefresh>=1800000)loadWeather(forceWeather)}}
+function checkDate(forceWeather=false){const key=dateKey(new Date());if(key!==lastSystemDate){lastSystemDate=key;renderToday(forceWeather);requestAnimationFrame(scrollToCurrentDay)}else{if(forceWeather||Date.now()-lastWeatherRefresh>=1800000)loadWeather(forceWeather)}}
 window.addEventListener('online',()=>loadWeather(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDate(true)});window.addEventListener('pageshow',e=>{if(e.persisted&&Date.now()-lastWeatherRefresh>1000)checkDate(true)});setInterval(checkDate,30000);checkDate(true);
 document.querySelectorAll('.route-summary span').forEach(e=>{const text=e.textContent;if(text.includes(' / '))e.innerHTML=text.split(' / ').map(n=>wikiLink(n,true)).join(' / ');else if(wikiTitles[text])e.innerHTML=wikiLink(text,true)});
 
 
 syncNavigation();
-window.addEventListener('load',()=>requestAnimationFrame(()=>{if(!isOpen(sheet)){const route=routeState();if(activeView==='itinerary'){if(route.day!==null)scrollToDay(route.day);else scrollToCurrentDay()}else window.scrollTo(0,viewScroll[activeView]||0)}}));
+window.addEventListener('load',()=>requestAnimationFrame(()=>{if(!isOpen(sheet)){const route=routeState();if(activeView==='itinerary'){if(route.day!==null)scrollToDay(route.day,route.visit);else scrollToCurrentDay()}else window.scrollTo(0,viewScroll[activeView]||0)}}));
 for(const rail of document.querySelectorAll('.date-rail,.weather-grid,.sequence')){
   let drag=null,suppressClick=false;
   rail.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;suppressClick=false;drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:rail.scrollLeft,active:false}});
