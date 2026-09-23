@@ -143,17 +143,41 @@ function syncNavigation(){const route=routeState(),sheetState=history.state?.app
   syncAttractionMaps();
   if(sheetState){const key=JSON.stringify(sheetState);if(key!==renderedSheet){renderSheet(sheetState);renderedSheet=key}const wasOpen=isOpen(sheet);openModal(sheet);if(!wasOpen)focusQuietly(document.getElementById('closeSheet'))}else if(isOpen(sheet)){closeModal(sheet);renderedSheet='';returnFocus=sheetOpener}
   document.body.classList.toggle('dialog-open',isOpen(sheet));document.querySelector('.app').inert=isOpen(sheet);document.querySelector('.mobile-nav').inert=isOpen(sheet);document.getElementById('modalBackdrop').hidden=!(isOpen(sheet)&&sheet.classList.contains('fallback-dialog'));
-  if(returnFocus)requestAnimationFrame(()=>{window.scrollTo({top:sheetScrollY,behavior:'instant'});focusQuietly(returnFocus)});
-  if(!sheetState&&(changed||changedDay||changedPosition)){requestAnimationFrame(()=>{if(activeView==='itinerary'){if(route.day!==null){scrollToDay(route.day,route.visit)}else if(changed)scrollToCurrentDay()}else if(changed)window.scrollTo(0,viewScroll[activeView]||0)})}
+  if(returnFocus){window.scrollTo({top:sheetScrollY,behavior:'auto'});focusQuietly(returnFocus)}
+  if(!sheetState&&(changed||changedDay||changedPosition)){if(activeView==='itinerary'){if(route.day!==null){scrollToDay(route.day,route.visit)}else if(changed)scrollToCurrentDay()}else if(changed)window.scrollTo({top:viewScroll[activeView]||0,behavior:'auto'})}
   document.title=(route.day!==null?itinerary[route.day].d+' '+itinerary[route.day].title:document.querySelector(`[data-nav][href="#${activeView}"] span`).textContent)+' · 澳新旅行手册';
 }
-function toggleInlineDay(index){const next=expandedDay===index?null:index;history.replaceState(null,'','#itinerary'+(next===null?'':'/day-'+(next+1)));syncNavigation();requestAnimationFrame(()=>scrollToDay(index))}
-function collapseInlineDay(index){history.replaceState(null,'','#itinerary');syncNavigation();requestAnimationFrame(()=>{scrollToDay(index);focusQuietly(document.querySelector('#day-'+(index+1)+' .day-head'))})}
+function toggleInlineDay(index){const next=expandedDay===index?null:index;history.replaceState(null,'','#itinerary'+(next===null?'':'/day-'+(next+1)));syncNavigation();scrollToDay(index)}
+function collapseInlineDay(index){history.replaceState(null,'','#itinerary');syncNavigation();scrollToDay(index);focusQuietly(document.querySelector('#day-'+(index+1)+' .day-head'))}
 function openDay(index,visit=false){if(index<0||index>=itinerary.length)return;history.pushState(null,'','#itinerary/day-'+(index+1)+(visit?'/visit':''));syncNavigation()}
 function openSheet(data,opener=document.activeElement){if(!isOpen(sheet)){sheetOpener=opener;sheetScrollY=scrollY}history.pushState({app:'aunz-touch',kind:'sheet',sheet:data},'',location.href);syncNavigation()}
 function closeSheet(){if(history.state?.app==='aunz-touch'&&history.state.sheet)history.back();else{closeModal(sheet);syncNavigation()}}
-function goView(id){if(activeView===id){if(id==='itinerary'){history.replaceState(null,'','#itinerary');syncNavigation();scrollToCurrentDay()}else window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});return}history.pushState(null,'','#'+id);syncNavigation()}
-document.querySelectorAll('[data-nav]').forEach(a=>a.onclick=e=>{e.preventDefault();goView(a.hash.slice(1))});
+function navigateTab(id,replace=false){
+ const hash='#'+id;
+ try{history[replace?'replaceState':'pushState'](null,'',hash)}catch(error){if(error.name!=='SecurityError')throw error;location.hash=hash}
+ syncNavigation();
+}
+function goView(id){if(activeView===id){if(id==='itinerary'){if(routeState().day!==null)navigateTab(id,true);scrollToCurrentDay()}else window.scrollTo({top:0,behavior:'auto'});return}navigateTab(id)}
+const navigation=document.querySelector('.mobile-nav');
+let navigationPress=null,lastTouchNavigation=null;
+navigation.addEventListener('pointerdown',event=>{
+ if(!event.isPrimary||event.pointerType==='mouse')return;
+ const link=event.target.closest('[data-nav]');
+ navigationPress=link?{link,id:event.pointerId,x:event.clientX,y:event.clientY}:null;
+});
+navigation.addEventListener('pointercancel',()=>{navigationPress=null});
+navigation.addEventListener('pointerup',event=>{
+ const press=navigationPress;navigationPress=null;
+ if(!press||press.id!==event.pointerId||event.target.closest('[data-nav]')!==press.link||Math.hypot(event.clientX-press.x,event.clientY-press.y)>10)return;
+ event.preventDefault();lastTouchNavigation={link:press.link,time:event.timeStamp};
+ goView(press.link.hash.slice(1));
+});
+navigation.addEventListener('click',event=>{
+ const link=event.target.closest('[data-nav]');if(!link)return;
+ event.preventDefault();
+ if(event.detail!==0&&lastTouchNavigation?.link===link&&event.timeStamp-lastTouchNavigation.time<700){lastTouchNavigation=null;return}
+ lastTouchNavigation=null;goView(link.hash.slice(1));
+});
 document.getElementById('closeSheet').onclick=closeSheet;sheet.addEventListener('cancel',e=>{e.preventDefault();closeSheet()});sheet.addEventListener('click',e=>{if(e.target!==sheet)return;const r=sheet.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeSheet()});document.getElementById('modalBackdrop').onclick=closeSheet;
 window.addEventListener('popstate',syncNavigation);window.addEventListener('hashchange',syncNavigation);
 if(!viewIds.includes(location.hash.slice(1).split('/')[0]))history.replaceState(null,'','#today');
@@ -229,7 +253,6 @@ document.querySelectorAll('.route-summary span').forEach(e=>{const text=e.textCo
 
 
 syncNavigation();
-window.addEventListener('load',()=>requestAnimationFrame(()=>{if(!isOpen(sheet)){const route=routeState();if(activeView==='itinerary'){if(route.day!==null)scrollToDay(route.day,route.visit);else scrollToCurrentDay()}else window.scrollTo(0,viewScroll[activeView]||0)}}));
 for(const rail of document.querySelectorAll('.date-rail,.weather-grid,.sequence')){
   let drag=null,suppressClick=false;
   rail.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;suppressClick=false;drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:rail.scrollLeft,active:false}});
