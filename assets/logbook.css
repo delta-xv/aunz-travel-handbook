@@ -105,7 +105,7 @@ body.logbook::before{content:'';position:fixed;inset:80px 12px auto;height:var(-
 .logbook .primary-btn:active,.logbook .route-stop:active,.logbook .attraction>summary:active{background:transparent;border-color:var(--green);color:var(--green)}
 .logbook-documents .button{background:transparent}
 
-.logbook .weather-heading{display:flex;align-items:center;gap:3px}.logbook .weather-attribution{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:44px;color:var(--muted);text-decoration:none;font:16px/1 Arial,sans-serif}
+.logbook .weather-heading{display:flex;align-items:center;gap:3px}
 
 .logbook .weather-unit{font-size:12px;color:var(--muted)}
 
