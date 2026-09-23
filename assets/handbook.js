@@ -152,10 +152,10 @@ function renderSheet(data){window.routeMap.clearPlace();const title=document.get
   const copy=document.getElementById('copySheet');if(copy)copy.onclick=()=>{const field=document.getElementById('copyField');copyText(field.value,field)};
 }
 document.addEventListener('click',e=>{const button=e.target.closest('[data-place-day]');if(button)openSheet({type:'map',day:Number(button.dataset.placeDay),place:Number(button.dataset.placeIndex)},button)});
-let selectedDay='auto';
-document.getElementById('previousToday').onclick=()=>{if(displayedDay>0){selectedDay=String(displayedDay-1);renderToday()}};
-document.getElementById('nextToday').onclick=()=>{if(displayedDay<itinerary.length-1){selectedDay=String(displayedDay+1);renderToday()}};
-document.getElementById('resetToday').onclick=()=>{selectedDay='auto';renderToday()};
+const dateRail=document.getElementById('dateRail');let selectedDay='auto';
+dateRail.innerHTML='<button class="date-chip" data-day="auto" aria-pressed="true"><span>自动</span><strong>今天</strong></button>'+itinerary.map((x,i)=>`<button class="date-chip" data-day="${i}" aria-pressed="false" aria-label="${x.date} ${x.d} ${escapeHtml(x.title)}"><span>${x.date}</span><strong>${x.d}</strong></button>`).join('');
+dateRail.addEventListener('click',e=>{const button=e.target.closest('[data-day]');if(!button)return;selectedDay=button.dataset.day;renderToday();button.scrollIntoView({block:'nearest',inline:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
+function updateDateRail(){dateRail.querySelectorAll('button').forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.day===selectedDay));button.classList.toggle('is-today',button.dataset.day!=='auto'&&Number(button.dataset.day)===currentDayIndex())})}
 function weatherDetailURL(city){return 'https://www.windy.com/'+cities[city][1].toFixed(4)+'/'+cities[city][2].toFixed(4)}
 
 let displayedDay=0,lastSystemDate='',weatherGeneration=0,lastWeatherRefresh=0;
@@ -164,10 +164,7 @@ function renderToday(forceWeather=false){
  displayedDay=manual?Number(selectedDay):idx>=0?idx:key<tripDates[0]?0:itinerary.length-1;
  const x=itinerary[displayedDay],date=manual?new Date(tripDates[displayedDay]+'T12:00:00'):now;
  document.getElementById('todayHeading').textContent=new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(date);
- document.getElementById('previousToday').disabled=displayedDay===0;
- document.getElementById('nextToday').disabled=displayedDay===itinerary.length-1;
- document.getElementById('resetToday').textContent=manual?'回到今天':'今天';
- document.getElementById('resetToday').disabled=!manual;
+ updateDateRail();
  const note=document.getElementById('todayDateNote');note.hidden=manual||idx>=0;note.textContent=key<tripDates[0]?'9月24日出发':'行程已结束';
  document.getElementById('todayTitle').textContent=x.title;
  document.getElementById('todayEssentials').innerHTML=`<div><b>${logbookIcon('clock')}交通</b><span>${flightLinks(x.time)}</span></div>${displayedDay===0?`<div><b>${logbookIcon('pin')}集合</b><span>${departureMeeting}</span></div>`:''}`;
