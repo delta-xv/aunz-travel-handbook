@@ -62,7 +62,11 @@
   const canvas = document.getElementById('interactiveMap');
   const status = document.getElementById('routeMapStatus');
   const retry = document.getElementById('retryRouteMap');
+  const todayButton = document.getElementById('todayRouteMap');
+  const locateButton = document.getElementById('locateRouteMap');
+  const locationStatus = document.getElementById('routeLocationStatus');
   let map, tiles, overlays, libraryPromise, region = 'all', regionDate = '', markers = {};
+  let viewMode = 'region', todayMarker, positionMarker, accuracyCircle, viewRevision = 0;
   let tileErrors = 0, tileTimer, mapReady = false;
   const latLng = id => stops[id].slice(2, 4);
   const isVisible = () => !document.getElementById('route-map').hidden;
@@ -77,6 +81,77 @@
     if (day >= 1 && day <= 6) return 'au';
     if (day >= 7 && day <= 13) return 'nz';
     return 'all';
+  }
+
+  function todayLocation(now = new Date()) {
+    const day = itinerary.findIndex(item => '2026-' + item.date.replace('/', '-') === mapDateKey(now));
+    const locations = [null, 'melbourne', 'Twelve Apostles', 'melbourne', 'cairns', 'Kuranda', 'sydney', 'queenstown', 'milford', 'queenstown', 'cook', 'tekapo', 'rotorua', 'auckland'];
+    const id = locations[day];
+    if (!id) return null;
+    return stops[id] ? { name: stops[id][1], coordinates: latLng(id) } : { name: placeNames[id], coordinates: placeLocations[id].coordinates };
+  }
+
+  function updateViewControls() {
+    const location = todayLocation();
+    todayButton.disabled = !location;
+    todayButton.textContent = location ? `今日 · ${location.name}` : '今日地点';
+    todayButton.setAttribute('aria-pressed', String(viewMode === 'today'));
+    locateButton.setAttribute('aria-pressed', String(viewMode === 'location'));
+    document.querySelectorAll('[data-map-region]').forEach(button => {
+      button.setAttribute('aria-pressed', String(viewMode === 'region' && button.dataset.mapRegion === region));
+    });
+  }
+
+  function focusToday() {
+    const location = todayLocation();
+    if (!map || !location) return;
+    if (mapReady) map.stop();
+    map.closePopup();
+    map.invalidateSize({ pan: false });
+    if (todayMarker) map.removeLayer(todayMarker);
+    todayMarker = L.circleMarker(location.coordinates, { radius: 8, color: '#853e30', weight: 2, fillColor: '#faf6ec', fillOpacity: 1 })
+      .bindTooltip(`今日行程 · ${location.name}`, { permanent: true, direction: 'top', offset: [0, -10] }).addTo(map);
+    map.setView(location.coordinates, 11, { animate: false });
+  }
+
+  function locationMessage(message) {
+    locationStatus.textContent = message;
+    locationStatus.hidden = !message;
+  }
+
+  async function locate() {
+    if (!window.isSecureContext) { locationMessage('定位需使用 HTTPS，请从线上手册打开。'); return; }
+    if (!navigator.geolocation) { locationMessage('此浏览器不支持定位，可查看今日行程地点。'); return; }
+    locateButton.disabled = true;
+    const revision = ++viewRevision;
+    locationMessage('正在获取位置…');
+    await show();
+    if (!map || !isVisible()) { locateButton.disabled = false; locationMessage('地图未就绪，请稍后重试。'); return; }
+    const fail = error => {
+      locateButton.disabled = false;
+      locationMessage(({ 1: '未获定位权限，可在浏览器设置中允许后重试。', 2: '暂时无法定位，请检查手机定位服务后重试。', 3: '定位超时，请在信号较好处重试。' })[error.code] || '定位失败，请稍后重试。');
+    };
+    try {
+      navigator.geolocation.getCurrentPosition(position => {
+        locateButton.disabled = false;
+        const { latitude, longitude, accuracy } = position.coords;
+        if (![latitude, longitude, accuracy].every(Number.isFinite)) { fail({}); return; }
+        const coordinates = [latitude, longitude];
+        if (positionMarker) map.removeLayer(positionMarker);
+        if (accuracyCircle) map.removeLayer(accuracyCircle);
+        accuracyCircle = L.circle(coordinates, { radius: accuracy, color: '#135d79', weight: 1, fillOpacity: 0.08 }).addTo(map);
+        positionMarker = L.circleMarker(coordinates, { radius: 8, color: '#fff', weight: 3, fillColor: '#135d79', fillOpacity: 1 })
+          .bindTooltip('我的位置', { permanent: true, direction: 'top', offset: [0, -10] }).addTo(map);
+        locationMessage(`定位精度约 ${Math.round(accuracy)} 米 · 再次点击可更新`);
+        if (revision === viewRevision && isVisible()) {
+          viewMode = 'location';
+          map.stop();
+          map.closePopup();
+          map.fitBounds(accuracyCircle.getBounds(), { padding: [35, 45], maxZoom: 16, animate: false });
+          updateViewControls();
+        }
+      }, fail, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    } catch { fail({}); }
   }
 
   function setStatus(message, canRetry = false) {
@@ -122,6 +197,9 @@
 
   function selectStop(id) {
     if (!map || !markers[id]) return;
+    viewRevision++;
+    viewMode = 'stop';
+    updateViewControls();
     map.setView(latLng(id), 10, { animate: false });
     markers[id].openPopup();
     canvas.scrollIntoView({ block: 'center', behavior: 'auto' });
@@ -129,9 +207,7 @@
 
   function renderRegion() {
     const data = regions[region];
-    document.querySelectorAll('[data-map-region]').forEach(button => {
-      button.setAttribute('aria-pressed', String(button.dataset.mapRegion === region));
-    });
+    updateViewControls();
     document.getElementById('routeMapNote').textContent = data.note;
     document.getElementById('routeMapStops').innerHTML = data.stops.map(id => {
       const [label, name] = stops[id];
@@ -174,7 +250,7 @@
       marker.bindPopup(popup, { maxWidth: 220 });
       markers[id] = marker;
     });
-    fitRoute();
+    if (viewMode === 'today') focusToday(); else fitRoute();
   }
 
   function initializeMap() {
@@ -208,6 +284,9 @@
     if (regionDate !== date) {
       regionDate = date;
       region = defaultRegion(now);
+      viewMode = todayLocation(now) ? 'today' : 'region';
+      viewRevision++;
+      if (todayMarker && map) { map.removeLayer(todayMarker); todayMarker = null; }
       renderRegion();
     }
     renderRegionControls();
@@ -230,11 +309,23 @@
     button.onclick = () => {
       region = button.dataset.mapRegion;
       regionDate = mapDateKey();
+      viewMode = 'region';
+      viewRevision++;
       renderRegion();
       if (!map) show();
       if (region === 'all' && map && typeof window.notifyTouch === 'function') window.notifyTouch('已显示完整行程');
     };
   });
+  todayButton.onclick = () => {
+    if (!todayLocation()) return;
+    region = defaultRegion();
+    regionDate = mapDateKey();
+    viewMode = 'today';
+    viewRevision++;
+    renderRegion();
+    if (!map) show();
+  };
+  locateButton.onclick = locate;
   document.getElementById('routeMapStops').onclick = event => {
     const button = event.target.closest('[data-map-stop]');
     if (button) selectStop(button.dataset.mapStop);
