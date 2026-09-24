@@ -138,6 +138,7 @@ function scrollToDay(index,visit=false){if(activeView!=='itinerary'||isOpen(shee
 function scrollToCurrentDay(){if(activeView!=='itinerary'||isOpen(sheet)||routeState().day!==null)return;const today=currentDayIndex();scrollToDay(today>=0?today:dateKey(new Date())<tripDates[0]?0:itinerary.length-1)}
 function syncNavigation(){const route=routeState(),sheetState=history.state?.app==='aunz-touch'&&['map','copy'].includes(history.state.sheet?.type)?history.state.sheet:null;const changed=activeView!==route.view,changedDay=expandedDay!==route.day,changedPosition=visitPosition!==route.visit;visitPosition=route.visit;let returnFocus=null;
   if(changed){if(activeView)viewScroll[activeView]=scrollY;activeView=route.view;document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==activeView);document.querySelectorAll('[data-nav]').forEach(a=>{const active=a.hash==='#'+activeView;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')})}
+  if(activeView==='today'&&changed)updateDateRail();
   if(activeView==='route-map')window.routeMap.show();
   setExpandedDay(route.view==='itinerary'?route.day:null);
   syncAttractionMaps();
@@ -215,9 +216,23 @@ document.addEventListener('toggle',e=>{if(e.target.matches('.attraction[data-sit
 document.addEventListener('click',e=>{const button=e.target.closest('[data-place-day]');if(button)openSheet({type:'map',day:Number(button.dataset.placeDay),place:Number(button.dataset.placeIndex)},button)});
 
 const dateRail=document.getElementById('dateRail');let selectedDay='auto';
-dateRail.innerHTML='<button class="date-chip" data-day="auto" aria-pressed="true"><span>自动</span><strong>今天</strong></button>'+itinerary.map((x,i)=>`<button class="date-chip" data-day="${i}" aria-pressed="false" aria-label="${x.date} ${x.d} ${escapeHtml(x.title)}"><span>${x.date}</span><strong>${x.d}</strong></button>`).join('');
-dateRail.addEventListener('click',e=>{const button=e.target.closest('[data-day]');if(!button)return;selectedDay=button.dataset.day;renderToday();button.scrollIntoView({block:'nearest',inline:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
-function updateDateRail(){dateRail.querySelectorAll('button').forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.day===selectedDay));button.classList.toggle('is-today',button.dataset.day!=='auto'&&Number(button.dataset.day)===currentDayIndex())})}
+dateRail.innerHTML=itinerary.map((x,i)=>`<button class="date-chip" data-day="${i}" aria-pressed="false" aria-label="${x.date} ${x.d} ${escapeHtml(x.title)}"><span>${x.date}</span><strong>${x.d}</strong></button>`).join('');
+dateRail.addEventListener('click',e=>{const button=e.target.closest('[data-day]');if(!button)return;selectedDay=Number(button.dataset.day)===currentDayIndex()?'auto':button.dataset.day;renderToday()});
+function updateDateRail(){
+ const today=currentDayIndex();
+ dateRail.querySelectorAll('button').forEach(button=>{
+  const index=Number(button.dataset.day);
+  button.setAttribute('aria-pressed',String(index===displayedDay));
+  button.classList.toggle('is-today',index===today);
+  if(index===today)button.setAttribute('aria-current','date');else button.removeAttribute('aria-current');
+ });
+ requestAnimationFrame(()=>{
+  if(!dateRail.getClientRects().length)return;
+  const selected=dateRail.querySelector('[aria-pressed="true"]');if(!selected)return;
+  const left=dateRail.scrollLeft+selected.getBoundingClientRect().left-dateRail.getBoundingClientRect().left-(dateRail.clientWidth-selected.offsetWidth)/2;
+  dateRail.scrollTo({left:Math.max(0,Math.min(dateRail.scrollWidth-dateRail.clientWidth,left)),behavior:'auto'});
+ });
+}
 function weatherDetailURL(city){return 'https://www.windy.com/'+cities[city][1].toFixed(4)+'/'+cities[city][2].toFixed(4)}
 
 let displayedDay=0,lastSystemDate='',weatherGeneration=0,lastWeatherRefresh=0;
@@ -275,7 +290,7 @@ function weatherContent(target,result){
 }
 async function loadWeather(force=false){const generation=++weatherGeneration,targets=weatherTargets();lastWeatherRefresh=Date.now();const grid=document.getElementById('weatherGrid');grid.innerHTML=targets.map((t,i)=>`<a class="card weather-card" id="weather-${i}" href="${weatherDetailURL(t.city)}" target="_blank" rel="noopener" title="查看详细天气（Windy）"><div class="weather-date">${t.date.slice(5)}</div><h3>${escapeHtml(weatherCityLabel(t.city))}</h3><p class="weather-meta">天气加载中…</p></a>`).join('');const button=document.getElementById('refreshWeather');button.disabled=true;await Promise.all([...new Set(targets.map(t=>t.city))].map(async city=>{const result=await fetchWeather(city,force);if(generation!==weatherGeneration)return;targets.forEach((target,i)=>{if(target.city===city)document.getElementById('weather-'+i).innerHTML=weatherContent(target,result)})}));if(generation===weatherGeneration)button.disabled=false}
 document.getElementById('refreshWeather').onclick=()=>loadWeather(true);
-function checkDate(forceWeather=false){const key=dateKey(new Date());if(key!==lastSystemDate){lastSystemDate=key;renderToday(forceWeather);requestAnimationFrame(scrollToCurrentDay)}else{if(forceWeather||Date.now()-lastWeatherRefresh>=1800000)loadWeather(forceWeather)}}
+function checkDate(forceWeather=false){const key=dateKey(new Date());if(key!==lastSystemDate){lastSystemDate=key;selectedDay='auto';renderToday(forceWeather);requestAnimationFrame(scrollToCurrentDay)}else{if(forceWeather||Date.now()-lastWeatherRefresh>=1800000)loadWeather(forceWeather)}}
 window.addEventListener('online',()=>loadWeather(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDate(true)});window.addEventListener('pageshow',e=>{if(e.persisted&&Date.now()-lastWeatherRefresh>1000)checkDate(true)});setInterval(checkDate,30000);checkDate(true);
 document.querySelectorAll('.route-summary span').forEach(e=>{const text=e.textContent;if(text.includes(' / '))e.innerHTML=text.split(' / ').map(n=>wikiLink(n,true)).join(' / ');else if(wikiTitles[text])e.innerHTML=wikiLink(text,true)});
 
