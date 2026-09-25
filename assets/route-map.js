@@ -102,10 +102,10 @@
     if (mapReady) map.stop();
     map.closePopup();
     map.invalidateSize({ pan: false });
+    map.setView(location.coordinates, 11, { animate: false });
     if (todayMarker) map.removeLayer(todayMarker);
     todayMarker = L.circleMarker(location.coordinates, { radius: 8, color: '#853e30', weight: 2, fillColor: '#faf6ec', fillOpacity: 1 })
       .bindTooltip(`今日行程 · ${location.name}`, { permanent: true, direction: 'top', offset: [0, -10] }).addTo(map);
-    map.setView(location.coordinates, 11, { animate: false });
   }
 
   function locationMessage(message) {
@@ -236,7 +236,9 @@
   }
 
   function initializeMap() {
+    const location = viewMode === 'today' ? todayLocation() : null;
     map = L.map(canvas, { scrollWheelZoom: false, attributionControl: true, zoomControl: false, minZoom: 2, maxZoom: 18 });
+    map.setView(location ? location.coordinates : latLng(regions[region].stops[0]), location ? 11 : 2, { animate: false });
     L.control.zoom({ position: 'topright', zoomInTitle: '放大地图', zoomOutTitle: '缩小地图' }).addTo(map);
     tiles = L.tileLayer(canvas.dataset.tileUrl, {
       maxZoom: 19, keepBuffer: 1,
@@ -281,7 +283,13 @@
       if (!map) initializeMap();
       locate();
     } catch {
-      setStatus('地图未能加载，请检查网络后重试。', true);
+      clearTimeout(tileTimer);
+      if (map) map.remove();
+      map = tiles = overlays = null;
+      todayMarker = positionMarker = accuracyCircle = null;
+      markers = {};
+      mapReady = false;
+      setStatus('地图未能加载，请重试。', true);
     }
   }
 
